@@ -606,7 +606,10 @@ function abbr(n) {
 }
 function myTeamGames() {
   if (!profile.equipa) return [];
-  return currentGames.filter(g => g.eA===profile.equipa || g.eB===profile.equipa);
+  return currentGames.filter(g =>
+    (g.eA===profile.equipa || g.eB===profile.equipa) &&
+    g.escalao===profile.escalao
+  );
 }
 function isWin(g,t) {
   if (g.rA===null||g.rA===undefined) return null;
