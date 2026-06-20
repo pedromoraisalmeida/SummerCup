@@ -75,6 +75,7 @@ FICHEIROS NO REPOSITÓRIO:
 - icon-512.png — ícone splash screen
 - apple-touch-icon.png — ícone iPhone
 - summercup_qrcode.png — QR Code da app
+- docs/ — documentação e specs da app (https://pedromoraisalmeida.github.io/SummerCup/docs/)
 - README.md — este ficheiro
 ```
 
@@ -91,6 +92,8 @@ SummerCup/
 ├── icon-512.png            # Ícone splash screen
 ├── apple-touch-icon.png    # Ícone iPhone
 ├── summercup_qrcode.png    # QR Code da app
+├── docs/                   # Documentação e specs da app
+│   └── index.html
 └── README.md               # Este ficheiro
 ```
 
@@ -200,4 +203,4 @@ Cada Sheet deve ser publicado como JSON:
 
 ---
 
-*Projeto desenvolvido com Claude (Anthropic) · Lousã Volei Clube 2025*
+*Projeto desenvolvido com Claude (Anthropic) · Lousã Volei Clube 2026*

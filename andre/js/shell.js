@@ -1,0 +1,102 @@
+import { state } from './state.js';
+import { shortTeam } from './utils.js';
+import { mergeResults, startFirebaseSync } from './firebase.js';
+
+export function initApp() {
+  mergeResults();
+  state.activeEscalao = state.profile.escalao || Object.keys(state.TEAMS).sort()[0];
+  state.classEscalao = state.profile.escalao || Object.keys(state.TEAMS).sort()[0];
+  if (state.profile.escalao && state.profile.equipa) {
+    for (const [s, teams] of Object.entries(state.TEAMS[state.profile.escalao] || {})) {
+      if (teams.includes(state.profile.equipa)) { state.profile.serie = s; break; }
+    }
+    state.classSerie = state.profile.serie || '';
+  }
+  const fn = { jogador:'🏃', treinador:'📋', dirigente:'🏅', arbitro:'🟡', pavilhao:'🏟' };
+  const label = state.profile.funcao === 'pavilhao' ? `Campo ${state.profile.campo}` :
+                state.profile.funcao === 'arbitro' ? state.profile.arbCode || 'Árbitro' :
+                shortTeam(state.profile.equipa);
+  document.getElementById('hdr-profile-btn').textContent = (fn[state.profile.funcao]||'') + ' ' + label;
+
+  // Adjust nav for pavilhao
+  if (state.profile.funcao === 'pavilhao') {
+    document.getElementById('nav-logistica').innerHTML = '<span class="nav-icon">🏟</span>Pavilhão';
+    document.getElementById('nav-logistica').onclick = () => showPage('pavilhao', document.getElementById('nav-logistica'));
+  }
+
+  Promise.all([
+    import('./roles/shared.js'),
+    import('./roles/jogador.js'),
+    import('./roles/arbitro.js'),
+    import('./roles/pavilhao.js'),
+    import('./roles/logistica.js'),
+  ]).then(([shared, jogador, arbitro, pavilhao, logistica]) => {
+    shared.buildFilterEscalao();
+    shared.buildFilterDia();
+    shared.buildClassFilters();
+    jogador.renderHome();
+    shared.renderJogos();
+    shared.renderClass();
+    logistica.renderTransport();
+    logistica.renderFood();
+    pavilhao.renderPavilhao();
+    startFirebaseSync(refreshAllViews);
+  });
+}
+
+function refreshAllViews() {
+  if (!state.profile) return;
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  const id = activePage.id.replace('page-', '');
+
+  import('./roles/shared.js').then(shared => {
+    import('./roles/jogador.js').then(jogador => {
+      import('./roles/pavilhao.js').then(pavilhao => {
+        if (id === 'home') jogador.renderHome();
+        else if (id === 'jogos') shared.renderJogos();
+        else if (id === 'class') shared.renderClass();
+        else if (id === 'pavilhao') pavilhao.renderPavilhao();
+      });
+    });
+  });
+}
+
+export function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  document.getElementById('scroll').scrollTop = 0;
+}
+
+export function showLogTab(id, btn) {
+  document.querySelectorAll('.log-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.log-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('log-' + id).classList.add('active');
+}
+
+export function openProfile() {
+  const fn={jogador:'Jogador',treinador:'Treinador',dirigente:'Dirigente',arbitro:'Árbitro',pavilhao:'Resp. Pavilhão'};
+  let rows=`<div class="profile-info-row"><span class="profile-info-label">Função</span><span class="profile-info-val">${fn[state.profile.funcao]||state.profile.funcao}</span></div>`;
+  if(state.profile.equipa)rows+=`<div class="profile-info-row"><span class="profile-info-label">Equipa</span><span class="profile-info-val">${state.profile.equipa}</span></div>`;
+  if(state.profile.escalao)rows+=`<div class="profile-info-row"><span class="profile-info-label">Escalão</span><span class="profile-info-val">${state.profile.escalao}</span></div>`;
+  if(state.profile.serie)rows+=`<div class="profile-info-row"><span class="profile-info-label">Série</span><span class="profile-info-val">${state.profile.serie}</span></div>`;
+  if(state.profile.campo)rows+=`<div class="profile-info-row"><span class="profile-info-label">Campo</span><span class="profile-info-val">${state.profile.campo}</span></div>`;
+  if(state.profile.arbCode)rows+=`<div class="profile-info-row"><span class="profile-info-label">Cód. Árbitro</span><span class="profile-info-val">${state.profile.arbCode}</span></div>`;
+  rows+=`<div class="profile-info-row"><span class="profile-info-label">Transportes</span><span class="profile-info-val">${state.profile.transportAccess?'✓ Desbloqueado':'Bloqueado'}</span></div>`;
+  document.getElementById('profile-info').innerHTML=rows;
+  document.getElementById('profile-panel').classList.add('open');
+}
+
+export function closeProfile(e) {
+  if(!e||e.target===document.getElementById('profile-panel'))
+    document.getElementById('profile-panel').classList.remove('open');
+}
+
+// ── WINDOW REGISTRATIONS ──
+window.showPage = showPage;
+window.showLogTab = showLogTab;
+window.openProfile = openProfile;
+window.closeProfile = closeProfile;
