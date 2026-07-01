@@ -1,10 +1,10 @@
-# 🏐 Summer Cup 2025 — App PWA
-**Lousã Volei Clube · XXIV Edição**
+# 🏐 Summer Cup 2026 — App PWA
+**Lousã Volei Clube · XXV Edição**
 
-> App móvel oficial do Summer Cup 2025. Instalável no telemóvel como PWA (Progressive Web App) — sem App Store, sem Google Play. Partilha-se por link.
+> App móvel oficial do Summer Cup 2026. Instalável no telemóvel como PWA (Progressive Web App) — sem App Store, sem Google Play. Partilha-se por link.
 
 **URL da app:** https://pedromoraisalmeida.github.io/SummerCup  
-**URL com patrocinadores (teste):** https://pedromoraisalmeida.github.io/SummerCup/index_pub.html
+**Versão com patrocinadores (arquivada, não publicada):** `archive/index_pub.html`
 
 ---
 
@@ -13,15 +13,15 @@
 > Cola este bloco no início de qualquer conversa nova com o Claude para continuar o trabalho sem perder contexto.
 
 ```
-Estou a trabalhar numa PWA para o Summer Cup 2025 do Lousã Volei Clube.
+Estou a trabalhar numa PWA para o Summer Cup 2026 do Lousã Volei Clube.
 
 REPOSITÓRIO: github.com/pedromoraisalmeida/SummerCup
 APP ONLINE: https://pedromoraisalmeida.github.io/SummerCup
 
 STACK TÉCNICA:
-- Single HTML file (index.html) — HTML + CSS + JS
+- App modular: index.html (markup) + styles.css + js/ (módulos ES6)
 - Firebase Realtime Database para resultados em tempo real
-- Google Sheets como back-office (dados lidos via JSON público)
+- Google Sheets como back-office (dados lidos via CSV público)
 - GitHub Pages como alojamento (gratuito)
 - PWA instalável em iOS e Android
 
@@ -30,52 +30,45 @@ FIREBASE:
 - Database URL: https://lvcsummercup-default-rtdb.europe-west1.firebasedatabase.app
 - SDK versão: 10.12.0
 
-DADOS CARREGADOS:
-- 370 jogos da 1.ª Fase (7 escalões: U14F, U15F, U15M, U16F, U17M, U19F, U19M)
-- 9 séries (A a I) por escalão
-- 44 campos (L4-L8, LE1-3, S1-3, MC1-3, PO1-3, G1-3, PL1-3, UC1-6, AS1-3, ST1-3, AL1-3, CP1-3, AV1-3)
-- Transportes de 200 equipas (partidas e regressos de 09/07)
+DADOS CARREGADOS (via Google Sheets, CSV):
+- Jogos (1.ª e 2.ª Fase), 7 escalões: U14F, U15F, U15M, U16F, U17M, U19F, U19M
+- Equipas — derivadas automaticamente dos jogos
+- Transportes — 5 dias, partidas/regressos com transbordos
+- Alimentação — 5 dias, por equipa/campo
 
-PERFIS DE UTILIZADOR:
-- Jogador — vê jogos da sua equipa + escalão
-- Treinador — idem + transportes (código: SummerCup2026)
-- Dirigente — idem + transportes (código: SummerCup2026)
-- Árbitro — vê calendário geral (escala a implementar)
-- Pavilhão — regista resultados set a set via Firebase
+PERFIS DE UTILIZADOR (onboarding próprio para cada um):
+- Jogador — vê jogos da sua equipa + escalão (sem código)
+- Treinador — idem + transportes/alimentação (código: SummerCup2026)
+- Dirigente — idem + transportes/alimentação (código: SummerCup2026)
+- Árbitro — autenticado por código ARB-XX
+- Pavilhão — autenticado por código PAV-XX (44 campos), regista resultados set a set via Firebase
 
 FUNCIONALIDADES IMPLEMENTADAS:
-- Onboarding: função → escalão → equipa (sem série — determinada automaticamente)
-- Ecrã inicial: stats + último resultado + próximo jogo + lista de jogos
-- Jogos: filtro por escalão e dia
-- Classificação: automática por série com pontos/vitórias/derrotas/sets
-- Logística: transportes com partidas/regressos e transbordos
-- Pavilhão: lista de jogos do campo + modal de registo de resultados
-- Firebase: sincronização em tempo real + indicador "live"
-- Dark mode: CSS forçado a branco no onboarding para compatibilidade iOS
+- Onboarding: função → equipa/código → confirmação (série determinada automaticamente)
+- Ecrã inicial, Jogos (filtro por escalão/dia), Classificação automática por série
+- Logística: transportes e alimentação (filtrados por perfil/campo)
+- Pavilhão: lista de jogos do campo + modal de registo de resultados set a set
+- Firebase: sincronização em tempo real + indicador "live" (merge com dados do Sheet)
 - PWA: manifest.json + ícones (icon-192.png, icon-512.png, apple-touch-icon.png)
-- QR Code: summercup_qrcode.png gerado com logo do torneio
 
 EM FALTA (por ordem de prioridade):
 1. Notificações push (VAPID Key + firebase-messaging-sw.js)
 2. Painel de validação de resultados pela organização
 3. Google Apps Script: Firebase → Sheet da organização
-4. Sheet de árbitros + escala personalizada por código ARB-XX
-5. Sheet de alimentação (cantina + horários + Maps URL)
-6. Sheet de notícias/eventos
-7. Transportes de 10/07 (só existe 09/07)
-8. Google Analytics (Firebase já ligado, falta ativar)
-9. Subdomínio summercup.lousavolleyclube.com (CNAME no DNS)
-10. Patrocinadores (código testado em index_pub.html, aguarda decisão)
+4. Sheet de notícias/eventos
+5. Transportes/Alimentação dos restantes dias (ver docs/data-sources/)
+6. Google Analytics (Firebase já ligado, falta ativar)
+7. Subdomínio summercup.lousavolleyclube.com (CNAME no DNS)
+8. Patrocinadores (versão de teste arquivada em archive/index_pub.html, aguarda decisão)
 
 FICHEIROS NO REPOSITÓRIO:
-- index.html — app principal
-- index_pub.html — versão com patrocinadores (teste)
+- index.html — markup da app
+- styles.css — estilos
+- js/ — módulos ES6 (config, state, data, firebase, onboarding, shell, utils, roles/)
 - manifest.json — configuração PWA
-- icon-192.png — ícone Android
-- icon-512.png — ícone splash screen
-- apple-touch-icon.png — ícone iPhone
-- summercup_qrcode.png — QR Code da app
-- docs/ — documentação e specs da app (https://pedromoraisalmeida.github.io/SummerCup/docs/)
+- icon-192.png, icon-512.png, apple-touch-icon.png — ícones PWA
+- archive/index_pub.html — versão de teste com patrocinadores (não publicada)
+- docs/ — documentação e specs da app (perfis em docs/roles/, fontes de dados em docs/data-sources/)
 - README.md — este ficheiro
 ```
 
@@ -85,16 +78,27 @@ FICHEIROS NO REPOSITÓRIO:
 
 ```
 SummerCup/
-├── index.html              # App principal
-├── index_pub.html          # Versão com patrocinadores (teste)
-├── manifest.json           # Configuração PWA
-├── icon-192.png            # Ícone Android
-├── icon-512.png            # Ícone splash screen
-├── apple-touch-icon.png    # Ícone iPhone
-├── summercup_qrcode.png    # QR Code da app
-├── docs/                   # Documentação e specs da app
-│   └── index.html
-└── README.md               # Este ficheiro
+├── index.html                  # Markup da app
+├── styles.css                  # Estilos
+├── js/                         # Módulos ES6
+│   ├── app.js                  # Entrypoint
+│   ├── config.js                # Firebase config, URLs dos Sheets, códigos de campo
+│   ├── state.js                 # Estado partilhado em memória
+│   ├── data.js                  # Parser CSV + carregamento dos Sheets
+│   ├── firebase.js              # Sync com Firebase Realtime Database
+│   ├── onboarding.js            # Fluxo de onboarding (5 perfis)
+│   ├── shell.js                 # Navegação, painel de perfil
+│   ├── utils.js                 # Helpers (formatação de jogos/equipas)
+│   └── roles/                   # Lógica específica por perfil (jogador, arbitro, pavilhao, logistica, shared)
+├── manifest.json                # Configuração PWA
+├── icon-192.png, icon-512.png, apple-touch-icon.png
+├── archive/
+│   └── index_pub.html          # Versão de teste com patrocinadores (não publicada)
+├── docs/                        # Documentação e specs da app
+│   ├── index.md
+│   ├── roles/                   # Spec de comportamento por perfil
+│   └── data-sources/            # Colunas/URLs de cada Google Sheet
+└── README.md
 ```
 
 ---
@@ -104,11 +108,10 @@ SummerCup/
 ```
 Google Sheets          Firebase               GitHub Pages
 ─────────────          ────────────           ─────────────
-Quadro competitivo     Resultados             Aloja o HTML
-Transportes       ←→  em tempo real    ←→    (index.html)
-Árbitros               Notificações
-Alimentação            push
-Notícias
+Jogos, Equipas         Resultados             Aloja a app
+Transportes       ←→  em tempo real    ←→    (index.html + styles.css + js/)
+Alimentação             Notificações
+                        push
 ```
 
 ---
