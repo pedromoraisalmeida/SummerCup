@@ -42,10 +42,17 @@ export function onPavCodeChange() {
   if (val.length > 3) document.getElementById('ob-pav-error').classList.toggle('show', !valid);
 }
 
+function addOption(select, value, label) {
+  const opt = document.createElement('option');
+  opt.value = value;
+  opt.textContent = label;
+  select.appendChild(opt);
+}
+
 function populateEscalaos() {
   const sel = document.getElementById('ob-escalao');
   sel.innerHTML = '<option value="">— Escolhe o escalão —</option>';
-  Object.keys(state.TEAMS).sort().forEach(e => sel.innerHTML += `<option value="${e}">${e}</option>`);
+  Object.keys(state.TEAMS).sort().forEach(e => addOption(sel, e, e));
 }
 
 export function onEscalaoChange() {
@@ -56,7 +63,7 @@ export function onEscalaoChange() {
   document.getElementById('ob-btn2').disabled = true;
   if (!e) return;
   const teams = [...new Set(Object.values(state.TEAMS[e]).flat())].sort();
-  teams.forEach(t => eq.innerHTML += `<option value="${t}">${t}</option>`);
+  teams.forEach(t => addOption(eq, t, t));
   eq.onchange = () => {
     if (eq.value) { state.profile.escalao = e; state.profile.equipa = eq.value; }
     document.getElementById('ob-btn2').disabled = !eq.value;

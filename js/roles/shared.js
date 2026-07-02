@@ -1,12 +1,20 @@
 import { state } from '../state.js';
 import { gameItemHTML } from '../utils.js';
 
+function wireFilterBarScroll(bar) {
+  const check = () => bar.classList.toggle('scrolled-end', bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4);
+  bar.addEventListener('scroll', check, {passive:true});
+  check();
+}
+
 export function buildFilterEscalao() {
   const esc=[...new Set(state.currentGames.map(g=>g.escalao))].sort();
   let h='';
   if (state.profile.escalao) h=`<div class="filter-pill active" onclick="setEscalao('${state.profile.escalao}',this)">${state.profile.escalao} ★</div>`;
   esc.forEach(e=>{if(e!==state.profile.escalao)h+=`<div class="filter-pill ${!state.profile.escalao?'active':''}" onclick="setEscalao('${e}',this)">${e}</div>`;});
-  document.getElementById('filter-escalao').innerHTML=h;
+  const bar=document.getElementById('filter-escalao');
+  bar.innerHTML=h;
+  wireFilterBarScroll(bar);
   if(!state.profile.escalao) state.activeEscalao=esc[0];
 }
 
@@ -14,7 +22,9 @@ export function buildFilterDia() {
   const dias = [...new Set(state.currentGames.map(g => g.dia))].sort();
   let h = `<div class="filter-pill active" onclick="setDia('todos',this)">Todos os dias</div>`;
   dias.forEach(d => h += `<div class="filter-pill" onclick="setDia('${d}',this)">${d.replace(/^0/, '').replace('/jul.', ' Jul.')}</div>`);
-  document.getElementById('filter-dia').innerHTML = h;
+  const bar=document.getElementById('filter-dia');
+  bar.innerHTML = h;
+  wireFilterBarScroll(bar);
 }
 
 export function setEscalao(e, el) {
@@ -49,7 +59,7 @@ export function buildClassFilters() {
   esc.forEach(e=>h+=`<div class="filter-pill ${e===state.classEscalao?'active':''}" onclick="setClassEscalao('${e}',this)">${e}</div>`);
   const bar=document.getElementById('filter-class-escalao');
   bar.innerHTML=h;
-  bar.addEventListener('scroll',()=>bar.classList.toggle('scrolled-end',bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4),{passive:true});
+  wireFilterBarScroll(bar);
   const active=bar.querySelector('.filter-pill.active');
   if(active) active.scrollIntoView({inline:'center',block:'nearest'});
   buildClassSeries();
@@ -62,7 +72,7 @@ export function buildClassSeries() {
   s.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerie('${x}',this)">Série ${x}</div>`);
   const bar=document.getElementById('filter-class-serie');
   bar.innerHTML=h;
-  bar.addEventListener('scroll',()=>bar.classList.toggle('scrolled-end',bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4),{passive:true});
+  wireFilterBarScroll(bar);
   const active=bar.querySelector('.filter-pill.active');
   if(active) active.scrollIntoView({inline:'center',block:'nearest'});
 }

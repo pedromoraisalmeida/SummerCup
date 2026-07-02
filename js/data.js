@@ -44,6 +44,7 @@ export function rowToGame(r, idx) {
     s3A: num(r['3º Set A']), s3B: num(r['3º Set B']),
     s4A: num(r['4º Set A']), s4B: num(r['4º Set B']),
     s5A: num(r['5º Set A']), s5B: num(r['5º Set B']),
+    aprovado: (r['Aprovado'] || r['Approvado'] || '').trim(),
   };
 }
 
