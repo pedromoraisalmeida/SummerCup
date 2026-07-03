@@ -1,5 +1,27 @@
 import { state } from '../state.js';
 import { ACCESS_KEY } from '../config.js';
+import { dayNum } from '../utils.js';
+import { wireFilterBarScroll } from './shared.js';
+
+export function buildFilterLogDia() {
+  const days=[...new Set([
+    ...state.TRANSPORTS.map(t=>dayNum(t.dia)),
+    ...state.ALIMENTOS.map(r=>dayNum(r['Data'])),
+  ].filter(n=>n!==null))].sort((a,b)=>a-b);
+  let h=`<div class="filter-pill ${state.activeLogDia==='todos'?'active':''}" onclick="setLogDia('todos',this)">Todos os dias</div>`;
+  days.forEach(d=>h+=`<div class="filter-pill ${state.activeLogDia===d?'active':''}" onclick="setLogDia(${d},this)">${String(d).padStart(2,'0')} Jul.</div>`);
+  const bar=document.getElementById('filter-log-dia');
+  bar.innerHTML=h;
+  wireFilterBarScroll(bar);
+}
+
+export function setLogDia(d, el) {
+  state.activeLogDia=d;
+  document.querySelectorAll('#filter-log-dia .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderTransport();
+  renderFood();
+}
 
 export function renderTransport() {
   const el=document.getElementById('transport-content');
@@ -15,11 +37,11 @@ export function renderTransport() {
     return;
   }
   if(!state.profile.equipa){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Sem equipa selecionada</div></div>`;return;}
-  const myT=state.TRANSPORTS.filter(t=>t.equipa===state.profile.equipa&&t.escalao===state.profile.escalao);
+  const myT=state.TRANSPORTS.filter(t=>t.equipa===state.profile.equipa&&t.escalao===state.profile.escalao&&(state.activeLogDia==='todos'||dayNum(t.dia)===state.activeLogDia));
   if(!myT.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Nenhum transporte para ${state.profile.equipa}</div></div>`;return;}
   const partidas=myT.filter(t=>t.tipo==='partida');
   const regressos=myT.filter(t=>t.tipo==='regresso');
-  let h=`<div class="sec-head"><div class="sec-title">Transportes — 09 Julho</div></div>`;
+  let h=`<div class="sec-head"><div class="sec-title">Transportes</div></div>`;
   if(partidas.length){h+=`<div style="margin-bottom:8px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--blue-l);color:var(--blue-d);border:1px solid rgba(26,91,166,.2)">🏟 Partidas</span></div>`;partidas.forEach(t=>h+=transportCardHTML(t));}
   if(regressos.length){h+=`<div style="margin-bottom:8px;margin-top:12px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--green-l,#e6f5ee);color:var(--green);border:1px solid rgba(26,122,69,.2)">🏠 Regressos</span></div>`;regressos.forEach(t=>h+=transportCardHTML(t));}
   el.innerHTML=h;
@@ -52,7 +74,7 @@ export function renderFood() {
     el.innerHTML=`<div class="empty"><div class="empty-icon">🍽</div><div class="empty-txt">Seleciona equipa no onboarding.</div></div>`;
     return;
   }
-  const myFood = state.ALIMENTOS.filter(r => r['Competição'] === state.profile.escalao && r['Equipa'] === state.profile.equipa);
+  const myFood = state.ALIMENTOS.filter(r => r['Competição'] === state.profile.escalao && r['Equipa'] === state.profile.equipa && (state.activeLogDia==='todos'||dayNum(r['Data'])===state.activeLogDia));
   if (!myFood.length) {
     el.innerHTML=`<div class="empty"><div class="empty-icon">🍽</div><div class="empty-txt">Sem informação de alimentação para ${state.profile.equipa}.</div></div>`;
     return;
@@ -75,3 +97,4 @@ export function renderFood() {
 
 // ── WINDOW REGISTRATIONS ──
 window.unlockTransport = unlockTransport;
+window.setLogDia = setLogDia;

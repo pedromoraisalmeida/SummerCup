@@ -2,6 +2,14 @@ import { state } from './state.js';
 
 export function shortTeam(n) { if (!n) return ''; return n.length > 16 ? n.split(' ')[0] : n; }
 
+export function dayNum(str) {
+  if (!str) return null;
+  const m = String(str).match(/^\s*(\d{1,2})\s*\//);
+  if (m) return parseInt(m[1]);
+  const m2 = String(str).match(/\d{1,2}/);
+  return m2 ? parseInt(m2[0]) : null;
+}
+
 export function abbr(n) {
   if (!n) return '??';
   const c = n.replace(/"[^"]*"/g,'').trim();

@@ -5,7 +5,7 @@ export function selectFuncao(f, el) {
   document.querySelectorAll('.ob-card').forEach(c => c.classList.remove('sel'));
   el.classList.add('sel');
   state.profile = { funcao: f };
-  document.getElementById('ob-btn1').disabled = false;
+  document.getElementById('ob-btn1').disabled = !state.dataLoaded;
 }
 
 export function goStep(n) {

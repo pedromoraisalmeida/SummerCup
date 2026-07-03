@@ -11,8 +11,8 @@ export function renderHome() {
   const wins = done.filter(g => isWin(g,state.profile.equipa)).length;
   let html = `<div class="stats-row">
     <div class="stat-chip"><div class="stat-chip-num">${my.length}</div><div class="stat-chip-label">Jogos</div></div>
-    <div class="stat-chip"><div class="stat-chip-num">${wins}</div><div class="stat-chip-label">Vitórias</div></div>
-    <div class="stat-chip"><div class="stat-chip-num">${done.length-wins}</div><div class="stat-chip-label">Derrotas</div></div>
+    <div class="stat-chip"><div class="stat-chip-num win">${wins}</div><div class="stat-chip-label">Vitórias</div></div>
+    <div class="stat-chip"><div class="stat-chip-num loss">${done.length-wins}</div><div class="stat-chip-label">Derrotas</div></div>
   </div>`;
   if (done.length>0) {
     const last=done[done.length-1]; const w=isWin(last,state.profile.equipa);

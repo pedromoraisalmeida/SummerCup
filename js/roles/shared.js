@@ -1,10 +1,10 @@
 import { state } from '../state.js';
 import { gameItemHTML } from '../utils.js';
 
-function wireFilterBarScroll(bar) {
+export function wireFilterBarScroll(bar) {
   const check = () => bar.classList.toggle('scrolled-end', bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4);
   bar.addEventListener('scroll', check, {passive:true});
-  check();
+  new ResizeObserver(check).observe(bar);
 }
 
 export function buildFilterEscalao() {
@@ -56,7 +56,7 @@ export function buildClassFilters() {
   const esc=[...new Set(state.currentGames.map(g=>g.escalao))].sort();
   if(!state.classEscalao) state.classEscalao=esc[0];
   let h='';
-  esc.forEach(e=>h+=`<div class="filter-pill ${e===state.classEscalao?'active':''}" onclick="setClassEscalao('${e}',this)">${e}</div>`);
+  esc.forEach(e=>h+=`<div class="filter-pill ${e===state.classEscalao?'active':''}" onclick="setClassEscalao('${e}',this)">${e}${e===state.profile.escalao?' ★':''}</div>`);
   const bar=document.getElementById('filter-class-escalao');
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
@@ -69,7 +69,7 @@ export function buildClassSeries() {
   const s=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
   if(!state.classSerie||!s.includes(state.classSerie)) state.classSerie=s[0]||'';
   let h='';
-  s.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerie('${x}',this)">Série ${x}</div>`);
+  s.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerie('${x}',this)">Série ${x}${x===state.profile.serie&&state.classEscalao===state.profile.escalao?' ★':''}</div>`);
   const bar=document.getElementById('filter-class-serie');
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
@@ -98,7 +98,8 @@ export function renderClass() {
   const gms=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie&&g.rA!==null&&g.rA!==undefined);
   const teams=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie).flatMap(g=>[g.eA,g.eB]))];
   const st={};
-  teams.forEach(t=>st[t]={j:0,v:0,d:0,sf:0,sc:0,pts:0});
+  teams.forEach(t=>st[t]={j:0,v:0,d:0,sf:0,sc:0,pf:0,pa:0,pts:0});
+  const setKeysA=['s1A','s2A','s3A','s4A','s5A'], setKeysB=['s1B','s2B','s3B','s4B','s5B'];
   gms.forEach(g=>{
     if(!st[g.eA]||!st[g.eB])return;
     st[g.eA].j++;st[g.eB].j++;
@@ -106,17 +107,24 @@ export function renderClass() {
     st[g.eB].sf+=g.rB;st[g.eB].sc+=g.rA;
     if(g.rA>g.rB){st[g.eA].v++;st[g.eA].pts+=3;st[g.eB].d++;}
     else{st[g.eB].v++;st[g.eB].pts+=3;st[g.eA].d++;}
+    setKeysA.forEach((kA,idx)=>{
+      const kB=setKeysB[idx];
+      if(g[kA]===null||g[kA]===undefined)return;
+      st[g.eA].pf+=g[kA];st[g.eA].pa+=g[kB];
+      st[g.eB].pf+=g[kB];st[g.eB].pa+=g[kA];
+    });
   });
+  const ratio=(a,b)=>b===0?(a>0?'∞':'0.00'):(a/b).toFixed(2);
   const sorted=Object.entries(st).sort((a,b)=>{const[,x]=a,[,y]=b;return y.pts!==x.pts?y.pts-x.pts:(y.sf-y.sc)-(x.sf-x.sc);});
   const pc=i=>i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'';
   const pi=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
   let h=`<div class="card"><div class="card-header"><div class="card-title">${state.classEscalao} · Série ${state.classSerie}</div></div>
-    <table class="class-table"><thead><tr><th>#</th><th>Equipa</th><th>J</th><th>V</th><th>D</th><th>SF</th><th>SC</th><th>Pts</th></tr></thead><tbody>`;
+    <table class="class-table"><thead><tr><th>#</th><th>Equipa</th><th>J</th><th>V</th><th>D</th><th class="col-sets">S+</th><th class="col-sets">S-</th><th class="col-sets">Rácio</th><th class="col-sets">P+</th><th class="col-sets">P-</th><th class="col-sets">Rácio</th><th>Pts</th></tr></thead><tbody>`;
   sorted.forEach(([t,s],i)=>{
     const me=t===state.profile.equipa;
     h+=`<tr class="${me?'my-row':''}"><td><span class="pos-num ${pc(i)}">${pi(i)||i+1}</span></td>
       <td style="font-size:12px;font-weight:${me?700:400};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t}</td>
-      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td>${s.sf}</td><td>${s.sc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
+      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa)}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
   });
   h+=`</tbody></table></div>`;
   const sg=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie).sort((a,b)=>a.id-b.id);

@@ -79,7 +79,7 @@ export function rowsToTransports(rows) {
         legs.push({ orig, dest: r['Destino'], hora: r['Hora'] });
         if (r['Origem2']) legs.push({ orig: r['Origem2'], dest: r['Destino2'], hora: r['Hora2'] });
       }
-      result.push({ escalao, equipa, tipo, ape, legs });
+      result.push({ escalao, equipa, tipo, ape, legs, dia: r['Data'] || '' });
     });
   });
   return result;
@@ -108,5 +108,6 @@ export async function loadAllData() {
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
   }
+  state.dataLoaded = true;
   if (loadingEl) loadingEl.style.display = 'none';
 }
