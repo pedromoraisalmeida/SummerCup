@@ -64,7 +64,7 @@ export function rowsToTransports(rows) {
   const map = new Map();
   rows.forEach(r => {
     if (!r['Equipa'] || !r['Competição']) return;
-    const key = r['Competição'] + '||' + r['Equipa'];
+    const key = r['Competição'] + '||' + r['Equipa'] + '||' + r['Data'];
     if (!map.has(key)) map.set(key, { escalao: r['Competição'], equipa: r['Equipa'], rows: [] });
     map.get(key).rows.push(r);
   });

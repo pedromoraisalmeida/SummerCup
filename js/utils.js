@@ -1,6 +1,15 @@
 import { state } from './state.js';
+import { CAMPO_PAVILHAO } from './config.js';
 
 export function shortTeam(n) { if (!n) return ''; return n.length > 16 ? n.split(' ')[0] : n; }
+
+export function campoLabel(campo) {
+  if (!campo) return '';
+  const pav = CAMPO_PAVILHAO[campo];
+  if (!pav) return `📍 ${campo}`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pav)}`;
+  return `<div class="campo-pav" onclick="window.open('${mapsUrl}','_blank')">📍 ${pav} (Google Maps)</div><div class="campo-cod">📌 ${campo}</div>`;
+}
 
 export function dayNum(str) {
   if (!str) return null;
@@ -88,7 +97,7 @@ export function gameItemHTML(g, hi) {
       <div class="game-teams-row"><span class="game-team-name ${hi&&isA?'my-team':''}">${g.eA}</span></div>
       <div class="game-teams-row"><span class="game-team-name ${hi&&isB?'my-team':''}">${g.eB}</span></div>
       ${done&&sets.length?`<div class="sets-row">${sets.map(s=>`<span class="set-chip">${s}</span>`).join('')}</div>`:''}
-      <div class="game-campo">📍 ${g.campo}</div>
+      <div class="game-campo">${campoLabel(g.campo)}</div>
       <div class="game-escalao">🏐 ${g.escalao} · Série ${g.serie}</div>
     </div>
     ${badge}<div class="game-scores">${scoreContent}</div>

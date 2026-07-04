@@ -9,7 +9,7 @@ export const state = {
   profile: JSON.parse(localStorage.getItem('summercup_profile_andre') || 'null'),
   activeEscalao: '',
   activeDia: 'todos',
-  activeLogDia: 'todos',
+  activeLogDia: null,
   classEscalao: '',
   classSerie: '',
   currentResultGame: null,

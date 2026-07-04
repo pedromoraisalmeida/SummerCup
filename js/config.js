@@ -26,13 +26,36 @@ export const CAMPO_CODES = {
   "G1": "PAV-G1",  "G2": "PAV-G2",  "G3": "PAV-G3",
   "L4": "PAV-L4",  "L5": "PAV-L5",  "L6": "PAV-L6",  "L7": "PAV-L7",  "L8": "PAV-L8",
   "LE1": "PAV-LE1","LE2": "PAV-LE2","LE3": "PAV-LE3",
-  "MC1": "PAV-MC1","MC2": "PAV-MC2","MC3": "PAV-MC3",
+  "MC4": "PAV-MC4","MC5": "PAV-MC5","MC6": "PAV-MC6",
   "PL1": "PAV-PL1","PL2": "PAV-PL2","PL3": "PAV-PL3",
   "PO1": "PAV-PO1","PO2": "PAV-PO2","PO3": "PAV-PO3",
   "S1": "PAV-S1",  "S2": "PAV-S2",  "S3": "PAV-S3",
   "ST1": "PAV-ST1","ST2": "PAV-ST2","ST3": "PAV-ST3",
-  "UC1": "PAV-UC1","UC2": "PAV-UC2","UC3": "PAV-UC3",
-  "UC4": "PAV-UC4","UC5": "PAV-UC5","UC6": "PAV-UC6"
+  "UC1": "PAV-UC1","UC2": "PAV-UC2","UC3": "PAV-UC3","UC4": "PAV-UC4",
+  "UC5": "PAV-UC5","UC6": "PAV-UC6","UC7": "PAV-UC7"
 };
+
+// ── PAVILHÕES ──
+const PAVILHOES_CAMPOS = {
+  "Pavilhão Municipal n.º 2 da Lousã": ["L4", "L5", "L6"],
+  "Pavilhão da STATUS": ["L7"],
+  "Pavilhão da Escola Básica n.º 1 da Lousã": ["L8"],
+  "Pavilhão do Bairro dos Carvalhos": ["LE1", "LE2", "LE3"],
+  "Pavilhão Gimnodesportivo de Serpins": ["S1", "S2", "S3"],
+  "Pavilhão da Casa do Povo de Miranda do Corvo": ["MC4", "MC5", "MC6"],
+  "Complexo Desportivo Municipal de Vila Nova de Poiares": ["PO1", "PO2", "PO3"],
+  "Pavilhão Gimnodesportivo de Góis": ["G1", "G2", "G3"],
+  "Pavilhão Multiusos de Penela": ["PL1", "PL2", "PL3"],
+  "Estádio Universitário de Coimbra": ["UC1", "UC2", "UC3", "UC4", "UC5", "UC6", "UC7"],
+  "Pavilhão Gimnodesportivo de Ansião": ["AS1", "AS2", "AS3"],
+  "Pavilhão Escola Básica n.º 1 Avelar": ["AV1", "AV2", "AV3"],
+  "Pavilhão Gimnodesportivo de Santiago da Guarda": ["ST1", "ST2", "ST3"],
+  "Pavilhão Desportivo de Alvaiázere": ["AL1", "AL2", "AL3"],
+  "Pavilhão Municipal de Castanheira de Pera": ["CP1", "CP2", "CP3"],
+};
+
+export const CAMPO_PAVILHAO = Object.fromEntries(
+  Object.entries(PAVILHOES_CAMPOS).flatMap(([pav, campos]) => campos.map(c => [c, pav]))
+);
 
 export const ACCESS_KEY = "SummerCup2026";

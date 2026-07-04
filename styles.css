@@ -140,6 +140,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .badge-provisorio{background:var(--orange-l);color:var(--orange)}
 .badge-live{background:var(--red-l);color:var(--red);animation:pulse 1.5s infinite}
 .game-campo{font-size:10px;color:var(--txt3);margin-top:3px}
+.campo-pav{cursor:pointer}
+.campo-pav:active{opacity:.6}
 .game-escalao{font-size:10px;color:var(--txt3);margin-top:2px}
 .sets-row{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
 .set-chip{font-size:10px;background:#f0f4ff;border-radius:4px;padding:2px 6px;color:var(--blue-d);font-weight:600}

@@ -16,12 +16,19 @@ export function initApp() {
   const label = state.profile.funcao === 'pavilhao' ? `Campo ${state.profile.campo}` :
                 state.profile.funcao === 'arbitro' ? state.profile.arbCode || 'Árbitro' :
                 shortTeam(state.profile.equipa);
-  document.getElementById('hdr-profile-btn').textContent = (fn[state.profile.funcao]||'') + ' ' + label;
+  // Nome da equipa temporariamente escondido: reativar removendo style="display:none" do span
+  document.getElementById('hdr-profile-btn').innerHTML =
+    `<span>${fn[state.profile.funcao]||''}</span><span style="display:none"> ${label}</span>`;
 
   // Adjust nav for pavilhao
   if (state.profile.funcao === 'pavilhao') {
     document.getElementById('nav-logistica').innerHTML = '<span class="nav-icon">🏟</span>Pavilhão';
     document.getElementById('nav-logistica').onclick = () => showPage('pavilhao', document.getElementById('nav-logistica'));
+  }
+
+  // Logística temporariamente escondida para o perfil Jogador (Público): reativar removendo esta condição
+  if (state.profile.funcao === 'jogador') {
+    document.getElementById('nav-logistica').style.display = 'none';
   }
 
   Promise.all([
@@ -86,7 +93,9 @@ export function openProfile() {
   if(state.profile.serie)rows+=`<div class="profile-info-row"><span class="profile-info-label">Série</span><span class="profile-info-val">${state.profile.serie}</span></div>`;
   if(state.profile.campo)rows+=`<div class="profile-info-row"><span class="profile-info-label">Campo</span><span class="profile-info-val">${state.profile.campo}</span></div>`;
   if(state.profile.arbCode)rows+=`<div class="profile-info-row"><span class="profile-info-label">Cód. Árbitro</span><span class="profile-info-val">${state.profile.arbCode}</span></div>`;
-  rows+=`<div class="profile-info-row"><span class="profile-info-label">Transportes</span><span class="profile-info-val">${state.profile.transportAccess?'✓ Desbloqueado':'Bloqueado'}</span></div>`;
+  // Linha de Transportes temporariamente escondida para o perfil Jogador (Público), já que a Logística está escondida do footer: reativar removendo esta condição
+  const transportRowStyle = state.profile.funcao === 'jogador' ? ' style="display:none"' : '';
+  rows+=`<div class="profile-info-row"${transportRowStyle}><span class="profile-info-label">Transportes</span><span class="profile-info-val">${state.profile.transportAccess?'✓ Desbloqueado':'Bloqueado'}</span></div>`;
   document.getElementById('profile-info').innerHTML=rows;
   document.getElementById('profile-panel').classList.add('open');
 }

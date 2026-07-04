@@ -28,11 +28,12 @@
     <div class="ob-heading">Qual é a tua função?</div>
     <div class="ob-desc">Vamos personalizar a app para ti.</div>
     <div class="ob-grid">
-      <div class="ob-card" onclick="selectFuncao('jogador',this)"><div class="ob-card-icon">🏃</div><div class="ob-card-label">Jogador</div><div class="ob-card-sub">Atleta</div></div>
+      <div class="ob-card" onclick="selectFuncao('jogador',this)"><div class="ob-card-icon">🏃</div><div class="ob-card-label">Público</div><div class="ob-card-sub">Public</div></div>
       <div class="ob-card" onclick="selectFuncao('treinador',this)"><div class="ob-card-icon">📋</div><div class="ob-card-label">Treinador</div><div class="ob-card-sub">Coach</div></div>
-      <div class="ob-card" onclick="selectFuncao('dirigente',this)"><div class="ob-card-icon">🏅</div><div class="ob-card-label">Dirigente</div><div class="ob-card-sub">Staff</div></div>
-      <div class="ob-card" onclick="selectFuncao('arbitro',this)"><div class="ob-card-icon">🟡</div><div class="ob-card-label">Árbitro</div><div class="ob-card-sub">Referee</div></div>
-      <div class="ob-card" onclick="selectFuncao('pavilhao',this)" style="grid-column:span 2"><div class="ob-card-icon">🏟</div><div class="ob-card-label">Responsável de Pavilhão</div><div class="ob-card-sub">Registo de resultados</div></div>
+      <!-- Perfis temporariamente escondidos até estarem prontos: reativar removendo style="display:none" -->
+      <div class="ob-card" onclick="selectFuncao('dirigente',this)" style="display:none"><div class="ob-card-icon">🏅</div><div class="ob-card-label">Dirigente</div><div class="ob-card-sub">Staff</div></div>
+      <div class="ob-card" onclick="selectFuncao('arbitro',this)" style="display:none"><div class="ob-card-icon">🟡</div><div class="ob-card-label">Árbitro</div><div class="ob-card-sub">Referee</div></div>
+      <div class="ob-card" onclick="selectFuncao('pavilhao',this)" style="grid-column:span 2;display:none"><div class="ob-card-icon">🏟</div><div class="ob-card-label">Responsável de Pavilhão</div><div class="ob-card-sub">Registo de resultados</div></div>
     </div>
     <button class="ob-btn" id="ob-btn1" disabled onclick="goStep(2)">Continuar →</button>
   </div>
