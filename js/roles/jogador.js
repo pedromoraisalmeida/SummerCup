@@ -16,9 +16,7 @@ export function renderHome() {
   </div>`;
   if (done.length>0) {
     const last=done[done.length-1]; const w=isWin(last,state.profile.equipa);
-    const opp=last.eA===state.profile.equipa?last.eB:last.eA;
-    const sA=last.eA===state.profile.equipa?last.rA:last.rB;
-    const sB=last.eA===state.profile.equipa?last.rB:last.rA;
+    const isA=last.eA===state.profile.equipa;
     const oficial=isAprovado(last);
     html+=`<div class="sec-head"><div class="sec-title">Último resultado</div></div>
     <div class="hero-card">
@@ -27,16 +25,16 @@ export function renderHome() {
         <div class="hero-game-id">Jogo ${last.id}</div>
       </div>
       <div class="match-row">
-        <div class="match-team">${teamAvatarHTML(state.profile.equipa,'home')}<div class="match-team-name">${state.profile.equipa}</div></div>
-        <div class="match-score"><div class="match-score-num">${sA} – ${sB}</div><div class="match-score-sets">${setsStr(last).map(s=>`<span class="match-score-set-chip">${s}</span>`).join('')}</div></div>
-        <div class="match-team">${teamAvatarHTML(opp,'away')}<div class="match-team-name">${opp}</div></div>
+        <div class="match-team">${teamAvatarHTML(last.eA,'home')}<div class="match-team-name ${isA?'my-team-name':''}">${last.eA}</div></div>
+        <div class="match-score"><div class="match-score-num">${last.rA} – ${last.rB}</div><div class="match-score-sets">${setsStr(last).map(s=>`<span class="match-score-set-chip">${s}</span>`).join('')}</div></div>
+        <div class="match-team">${teamAvatarHTML(last.eB,'away')}<div class="match-team-name ${!isA?'my-team-name':''}">${last.eB}</div></div>
       </div>
-      <div class="match-meta"><div class="match-meta-item">📅 ${last.dia}</div><div class="match-meta-item">🕐 ${last.hora}</div><div class="match-meta-item">${campoLabel(last.campo)}</div><div class="match-meta-item match-meta-status">${oficial?'✓ Oficial':'⏳ Pendente'}</div></div>
+      <div class="match-meta"><div class="match-meta-item">📅 ${last.dia}</div><div class="match-meta-item">🕐 ${last.hora}</div><div class="match-meta-item">${campoLabel(last.campo, false)}</div><div class="match-meta-item match-meta-status">${oficial?'✓ Oficial':'⏳ Pendente'}</div></div>
     </div>`;
   }
   const upcoming=my.filter(g=>!hasResult(g));
   if (upcoming.length>0) {
-    const next=upcoming[0]; const opp=next.eA===state.profile.equipa?next.eB:next.eA;
+    const next=upcoming[0]; const isA=next.eA===state.profile.equipa;
     html+=`<div class="sec-head"><div class="sec-title">Próximo jogo</div></div>
     <div class="hero-card blue-bg">
       <div class="hero-top">
@@ -44,11 +42,11 @@ export function renderHome() {
         <div class="hero-game-id">Jogo ${next.id}</div>
       </div>
       <div class="match-row">
-        <div class="match-team">${teamAvatarHTML(state.profile.equipa,'home')}<div class="match-team-name">${state.profile.equipa}</div></div>
+        <div class="match-team">${teamAvatarHTML(next.eA,'home')}<div class="match-team-name ${isA?'my-team-name':''}">${next.eA}</div></div>
         <div class="match-score"><div class="match-score-num" style="font-size:20px;letter-spacing:0">vs</div><div class="match-score-sets">${next.escalao} · Série ${next.serie}</div></div>
-        <div class="match-team">${teamAvatarHTML(opp,'away')}<div class="match-team-name">${opp}</div></div>
+        <div class="match-team">${teamAvatarHTML(next.eB,'away')}<div class="match-team-name ${!isA?'my-team-name':''}">${next.eB}</div></div>
       </div>
-      <div class="match-meta"><div class="match-meta-item">📅 ${next.dia}</div><div class="match-meta-item">🕐 ${next.hora}</div><div class="match-meta-item">${campoLabel(next.campo)}</div></div>
+      <div class="match-meta"><div class="match-meta-item">📅 ${next.dia}</div><div class="match-meta-item">🕐 ${next.hora}</div><div class="match-meta-item">${campoLabel(next.campo, false)}</div></div>
     </div>`;
   }
   if (my.length>0) {

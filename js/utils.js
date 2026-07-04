@@ -3,8 +3,9 @@ import { CAMPO_PAVILHAO } from './config.js';
 
 export function shortTeam(n) { if (!n) return ''; return n.length > 16 ? n.split(' ')[0] : n; }
 
-export function campoLabel(campo) {
+export function campoLabel(campo, withPav = true) {
   if (!campo) return '';
+  if (!withPav) return `📌 ${campo}`;
   const pav = CAMPO_PAVILHAO[campo];
   if (!pav) return `📍 ${campo}`;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pav)}`;
@@ -30,7 +31,8 @@ export function abbr(n) {
 
 export function clubLogoSlug(n) {
   if (!n) return '';
-  return n.replace(/\s*"[^"]*"\s*$/, '').trim()
+  const clube = state.EQUIPA_CLUBE[n] || n;
+  return clube.replace(/\s*"[^"]*"\s*$/, '').trim()
     .normalize('NFD').replace(new RegExp('[̀-ͯ]', 'g'), '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -42,6 +44,12 @@ export function teamAvatarHTML(n, side) {
   const span = slug ? `<span style="display:none">${abbr(n)}</span>` : `<span>${abbr(n)}</span>`;
   const img = slug ? `<img src="./logos/${slug}.png" alt="" onerror="this.previousElementSibling.style.display='';this.remove()">` : '';
   return `<div class="match-team-abbr ${side}">${span}${img}</div>`;
+}
+
+export function teamLogoIcon(n) {
+  const slug = clubLogoSlug(n);
+  if (!slug) return '';
+  return `<img class="game-team-logo" src="./logos/${slug}.png" alt="" onerror="this.remove()">`;
 }
 
 export function myTeamGames() {
@@ -94,8 +102,8 @@ export function gameItemHTML(g, hi) {
   return `<div class="game-item">
     <div class="game-time"><div class="game-time-dia">${g.dia.replace('/jul.','jul')}</div><div class="game-time-hora">${g.hora}</div><div class="game-time-id">Jogo ${g.id}</div></div>
     <div class="game-teams">
-      <div class="game-teams-row"><span class="game-team-name ${hi&&isA?'my-team':''}">${g.eA}</span></div>
-      <div class="game-teams-row"><span class="game-team-name ${hi&&isB?'my-team':''}">${g.eB}</span></div>
+      <div class="game-teams-row"><div class="game-team-line">${teamLogoIcon(g.eA)}<span class="game-team-name ${hi&&isA?'my-team':''}">${g.eA}</span></div></div>
+      <div class="game-teams-row"><div class="game-team-line">${teamLogoIcon(g.eB)}<span class="game-team-name ${hi&&isB?'my-team':''}">${g.eB}</span></div></div>
       ${done&&sets.length?`<div class="sets-row">${sets.map(s=>`<span class="set-chip">${s}</span>`).join('')}</div>`:''}
       <div class="game-campo">${campoLabel(g.campo)}</div>
       <div class="game-escalao">🏐 ${g.escalao} · Série ${g.serie}</div>

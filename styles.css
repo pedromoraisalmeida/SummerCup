@@ -52,13 +52,17 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .hdr-logo{display:flex;align-items:center;gap:10px}
 .hdr-logo img{width:32px;height:32px;object-fit:contain;border-radius:50%;border:2px solid var(--yellow)}
 .hdr-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--white);line-height:1}
-.hdr-sub{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase}
+.hdr-sub{font-size:8px;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase}
 .hdr-right{display:flex;align-items:center;gap:8px}
 .hdr-live{display:flex;align-items:center;gap:5px;background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:99px;padding:4px 10px}
 .hdr-live-dot{width:6px;height:6px;border-radius:50%;background:#e74c3c;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hdr-live-txt{font-size:10px;font-weight:700;color:#e74c3c;letter-spacing:.5px}
-.hdr-profile{background:rgba(245,216,0,.1);border:1px solid rgba(245,216,0,.25);border-radius:99px;padding:5px 12px;font-size:11px;color:var(--yellow);font-weight:600;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hdr-profile{background:var(--white);border:1px solid #000;border-radius:99px;padding:8px 8px;font-size:11px;color:#000;font-weight:600;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.hdr-club-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid #000;background:var(--white)}
+.hdr-logo-escalao{display:inline-flex;align-items:center;gap:2px}
+.hdr-escalao{font-size:9px}
+.hdr-dot{font-size:16px}
 
 /* SCROLL + PAGES */
 #scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
@@ -92,13 +96,16 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .hero-badge.loss{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.3);color:#e87065}
 .hero-badge.win{background:rgba(26,122,69,.15);border-color:rgba(26,122,69,.35);color:#3ecf82}
 .hero-game-id{justify-self:center;font-size:14px;font-weight:700;color:rgba(255,255,255,.55)}
-.match-row{display:flex;align-items:center;gap:8px}
-.match-team{flex:1;text-align:center}
+.match-row{display:flex;align-items:flex-start;gap:8px}
+.match-team{flex:1;text-align:center;min-width:0}
+.match-team:first-child{padding-right:14px}
+.match-team:last-child{padding-left:14px}
 .match-team-abbr{position:relative;overflow:hidden;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin:0 auto 5px}
-.match-team-abbr.home{background:rgba(245,216,0,.15);color:var(--yellow);border:1.5px solid rgba(245,216,0,.3)}
-.match-team-abbr.away{background:rgba(26,91,166,.2);color:#7EB3F5;border:1.5px solid rgba(26,91,166,.3)}
+.match-team-abbr.home{background:var(--white);color:var(--yellow);border:1.5px solid #000}
+.match-team-abbr.away{background:var(--white);color:#7EB3F5;border:1.5px solid #000}
 .match-team-abbr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .match-team-name{font-size:11px;color:rgba(255,255,255,.7);line-height:1.2;font-weight:500}
+.match-team-name.my-team-name{font-weight:800;color:#fff}
 .match-score{text-align:center;flex-shrink:0;min-width:64px}
 .match-score-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--white);line-height:1;letter-spacing:-2px}
 .match-score-sets{font-size:10px;color:rgba(255,255,255,.3);margin-top:5px;display:flex;gap:3px;justify-content:center;flex-wrap:wrap}
@@ -131,6 +138,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .game-teams-row:last-of-type{margin-bottom:0}
 .game-team-name{font-size:13px;font-weight:400;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
 .game-team-name.my-team{color:var(--blue);font-weight:700}
+.game-team-line{display:flex;align-items:center;gap:5px;min-width:0}
+.game-team-logo{width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0}
 .game-scores{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;margin:0 10px}
 .game-score{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;flex-shrink:0}
 .game-score.win{color:var(--green)}.game-score.loss{color:var(--red)}
@@ -230,7 +239,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
 .profile-info-row:last-of-type{border-bottom:none}
 .profile-info-label{color:var(--txt2)}
-.profile-info-val{font-weight:700;color:var(--navy)}
+.profile-info-val{font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:6px}
+.profile-club-logo{width:20px;height:20px;border-radius:50%;object-fit:cover;border:1.5px solid #000;background:var(--white)}
 
 /* EMPTY + LOADING */
 .empty{text-align:center;padding:3rem 1rem;color:var(--txt3)}

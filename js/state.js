@@ -2,6 +2,7 @@
 export const state = {
   GAMES_BASE: [],
   TEAMS: {},
+  EQUIPA_CLUBE: {},
   TRANSPORTS: [],
   ALIMENTOS: [],
   fbResults: {},

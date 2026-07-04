@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { shortTeam } from './utils.js';
+import { clubLogoSlug } from './utils.js';
 import { mergeResults, startFirebaseSync } from './firebase.js';
 
 export function initApp() {
@@ -13,12 +13,19 @@ export function initApp() {
     state.classSerie = state.profile.serie || '';
   }
   const fn = { jogador:'🏃', treinador:'📋', dirigente:'🏅', arbitro:'🟡', pavilhao:'🏟' };
-  const label = state.profile.funcao === 'pavilhao' ? `Campo ${state.profile.campo}` :
-                state.profile.funcao === 'arbitro' ? state.profile.arbCode || 'Árbitro' :
-                shortTeam(state.profile.equipa);
-  // Nome da equipa temporariamente escondido: reativar removendo style="display:none" do span
-  document.getElementById('hdr-profile-btn').innerHTML =
-    `<span>${fn[state.profile.funcao]||''}</span><span style="display:none"> ${label}</span>`;
+  const icon = `<span>${fn[state.profile.funcao]||''}</span>`;
+  let hdrContent;
+  if (state.profile.equipa && state.profile.escalao) {
+    const slug = clubLogoSlug(state.profile.equipa);
+    const logo = slug ? `<img class="hdr-club-logo" src="./logos/${slug}.png" alt="" onerror="this.remove()">` : '';
+    hdrContent = `${icon}${logo ? ` <span class="hdr-dot">·</span> ` : ''}<span class="hdr-logo-escalao">${logo}<span class="hdr-escalao">(${state.profile.escalao})</span></span>`;
+  } else {
+    const label = state.profile.funcao === 'pavilhao' ? `Campo ${state.profile.campo}` :
+                  state.profile.funcao === 'arbitro' ? state.profile.arbCode || 'Árbitro' : '';
+    // Nome/código temporariamente escondido: reativar removendo style="display:none" do span
+    hdrContent = `${icon}<span style="display:none"> ${label}</span>`;
+  }
+  document.getElementById('hdr-profile-btn').innerHTML = hdrContent;
 
   // Adjust nav for pavilhao
   if (state.profile.funcao === 'pavilhao') {
@@ -87,8 +94,13 @@ export function showLogTab(id, btn) {
 
 export function openProfile() {
   const fn={jogador:'Jogador',treinador:'Treinador',dirigente:'Dirigente',arbitro:'Árbitro',pavilhao:'Resp. Pavilhão'};
-  let rows=`<div class="profile-info-row"><span class="profile-info-label">Função</span><span class="profile-info-val">${fn[state.profile.funcao]||state.profile.funcao}</span></div>`;
-  if(state.profile.equipa)rows+=`<div class="profile-info-row"><span class="profile-info-label">Equipa</span><span class="profile-info-val">${state.profile.equipa}</span></div>`;
+  const fnIcon={jogador:'🏃',treinador:'📋',dirigente:'🏅',arbitro:'🟡',pavilhao:'🏟'};
+  let rows=`<div class="profile-info-row"><span class="profile-info-label">Função</span><span class="profile-info-val">${fnIcon[state.profile.funcao]||''} ${fn[state.profile.funcao]||state.profile.funcao}</span></div>`;
+  if(state.profile.equipa){
+    const slug=clubLogoSlug(state.profile.equipa);
+    const logo=slug?`<img class="profile-club-logo" src="./logos/${slug}.png" alt="" onerror="this.remove()">`:'';
+    rows+=`<div class="profile-info-row"><span class="profile-info-label">Equipa</span><span class="profile-info-val">${logo} ${state.profile.equipa}</span></div>`;
+  }
   if(state.profile.escalao)rows+=`<div class="profile-info-row"><span class="profile-info-label">Escalão</span><span class="profile-info-val">${state.profile.escalao}</span></div>`;
   if(state.profile.serie)rows+=`<div class="profile-info-row"><span class="profile-info-label">Série</span><span class="profile-info-val">${state.profile.serie}</span></div>`;
   if(state.profile.campo)rows+=`<div class="profile-info-row"><span class="profile-info-label">Campo</span><span class="profile-info-val">${state.profile.campo}</span></div>`;

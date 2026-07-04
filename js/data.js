@@ -1,5 +1,6 @@
 import {
   SHEET_JOGOS_1, SHEET_JOGOS_2,
+  SHEET_EQUIPAS,
   SHEET_TRANS_BASE, SHEET_TRANS_GIDS,
   SHEET_ALIM_BASE, SHEET_ALIM_GIDS,
 } from './config.js';
@@ -60,6 +61,14 @@ export function buildTeamsFromGames(games) {
   return t;
 }
 
+export function rowsToEquipaClube(rows) {
+  const map = {};
+  rows.forEach(r => {
+    if (r['Equipa'] && r['Clube']) map[r['Equipa']] = r['Clube'];
+  });
+  return map;
+}
+
 export function rowsToTransports(rows) {
   const map = new Map();
   rows.forEach(r => {
@@ -91,9 +100,10 @@ export async function loadAllData() {
   if (loadingEl) loadingEl.style.display = 'block';
   try {
     const mkUrl = (base, gid) => `${base}?gid=${gid}&single=true&output=csv`;
-    const [r1, r2, ...rest] = await Promise.all([
+    const [r1, r2, rEquipas, ...rest] = await Promise.all([
       fetch(SHEET_JOGOS_1).then(r => r.text()),
       fetch(SHEET_JOGOS_2).then(r => r.text()),
+      fetch(SHEET_EQUIPAS).then(r => r.text()),
       ...SHEET_TRANS_GIDS.map(gid => fetch(mkUrl(SHEET_TRANS_BASE, gid)).then(r => r.text())),
       ...SHEET_ALIM_GIDS.map(gid => fetch(mkUrl(SHEET_ALIM_BASE, gid)).then(r => r.text())),
     ]);
@@ -103,6 +113,7 @@ export async function loadAllData() {
     const g2 = parseCSV(r2).map((r, i) => rowToGame(r, g1.length + i));
     state.GAMES_BASE = [...g1, ...g2].filter(g => g.eA && g.eB);
     state.TEAMS = buildTeamsFromGames(state.GAMES_BASE);
+    state.EQUIPA_CLUBE = rowsToEquipaClube(parseCSV(rEquipas));
     state.TRANSPORTS = rowsToTransports(transTexts.flatMap(t => parseCSV(t)));
     state.ALIMENTOS = alimTexts.flatMap(t => parseCSV(t));
   } catch(e) {
