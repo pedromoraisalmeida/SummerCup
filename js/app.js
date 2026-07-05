@@ -3,6 +3,34 @@ import { state } from './state.js';
 import { initApp } from './shell.js';
 import './onboarding.js';
 
+// 100dvh não é fiável em todos os fabricantes Android (ex. barras de navegação
+// tradicionais de 3 botões nalguns Xiaomi/MIUI) — medir a altura real do
+// viewport e aplicá-la como variável CSS é mais robusto entre dispositivos.
+function setAppHeight() {
+  document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+}
+setAppHeight();
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+
+// Service worker: garante que a app (e a PWA instalada) vão sempre buscar a
+// versão mais recente à rede primeiro, e avisa o utilizador (sem recarregar
+// à força, para não perder o que estiver a preencher) quando há atualização.
+if ('serviceWorker' in navigator) {
+  // Se já havia um controller ativo antes deste registo, qualquer troca de
+  // controller a partir daqui é uma atualização real — não a primeira
+  // instalação da própria SW (essa não deve mostrar o aviso).
+  const hadController = !!navigator.serviceWorker.controller;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return;
+    const banner = document.getElementById('update-banner');
+    if (banner) banner.classList.add('show');
+  });
+}
+
 // Add loading indicator to onboarding, right before the step-1 continue button
 const obBtn1 = document.getElementById('ob-btn1');
 if (obBtn1) {

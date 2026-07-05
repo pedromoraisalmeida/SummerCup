@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { gameItemHTML } from '../utils.js';
+import { gameItemHTML, teamLogoIcon } from '../utils.js';
 
 export function wireFilterBarScroll(bar) {
   const check = () => bar.classList.toggle('scrolled-end', bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4);
@@ -123,7 +123,7 @@ export function renderClass() {
   sorted.forEach(([t,s],i)=>{
     const me=t===state.profile.equipa;
     h+=`<tr class="${me?'my-row':''}"><td><span class="pos-num ${pc(i)}">${pi(i)||i+1}</span></td>
-      <td style="font-size:12px;font-weight:${me?700:400};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t}</td>
+      <td style="font-size:12px;font-weight:${me?700:400};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span class="class-team-cell">${teamLogoIcon(t)}<span class="class-team-name">${t}</span></span></td>
       <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa)}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
   });
   h+=`</tbody></table></div>`;

@@ -118,6 +118,8 @@ export async function loadAllData() {
     state.ALIMENTOS = alimTexts.flatMap(t => parseCSV(t));
   } catch(e) {
     console.error('Erro ao carregar dados:', e);
+    const banner = document.getElementById('offline-banner');
+    if (banner) banner.classList.add('show');
   }
   state.dataLoaded = true;
   if (loadingEl) loadingEl.style.display = 'none';

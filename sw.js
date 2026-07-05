@@ -1,0 +1,41 @@
+// Service Worker — Summer Cup 2026
+// Estratégia: "rede primeiro" para tudo. Só usa a cache como reserva quando
+// não há rede (offline). Isto evita ficar preso em versões antigas: cada
+// pedido tenta sempre ir buscar a versão mais recente ao servidor primeiro.
+const CACHE_NAME = 'summercup-v1';
+
+self.addEventListener('install', () => {
+  // Não espera pelos separadores antigos fecharem — assume o controlo assim
+  // que estiver pronto.
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys()
+      .then((names) => Promise.all(
+        names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
+  // Só aplica a estratégia de cache aos ficheiros do próprio site (HTML/CSS/JS/
+  // logos/ícones). Pedidos a outros domínios (Google Sheets, Firebase) passam
+  // sempre diretos à rede, sem cache nem fallback offline — os dados do
+  // torneio nunca devem ser servidos como "atuais" quando na verdade são de
+  // uma sessão anterior.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
+  );
+});

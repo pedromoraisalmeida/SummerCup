@@ -13,7 +13,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--txt)}
-#app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:var(--app-height, 100dvh);overflow:hidden}
 
 /* ONBOARDING */
 #onboarding{position:fixed;inset:0;background:var(--navy);z-index:1000;display:flex;flex-direction:column;overflow-y:auto;padding:calc(var(--safe-top) + 1.5rem) 1.5rem calc(var(--safe-bot) + 2rem)}
@@ -75,10 +75,6 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .nav-icon{font-size:18px}
 @media (orientation: landscape){
   .nav-btn{flex-direction:row;gap:6px}
-  html,body{overflow:visible}
-  #app{overflow-y:auto;overflow-x:hidden}
-  #scroll{flex:none;overflow:visible}
-  #nav{position:sticky;bottom:0}
 }
 
 /* CARDS */
@@ -140,6 +136,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .game-team-name.my-team{color:var(--blue);font-weight:700}
 .game-team-line{display:flex;align-items:center;gap:5px;min-width:0}
 .game-team-logo{width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.class-team-cell{display:inline-flex;align-items:center;gap:5px;max-width:100%}
+.class-team-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .game-scores{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;margin:0 10px}
 .game-score{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;flex-shrink:0}
 .game-score.win{color:var(--green)}.game-score.loss{color:var(--red)}
@@ -256,3 +254,12 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 /* TOAST */
 #toast{position:fixed;bottom:calc(var(--safe-bot) + 80px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:var(--yellow);padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:900;white-space:nowrap;border:1px solid rgba(245,216,0,.3)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* OFFLINE BANNER */
+#offline-banner{position:fixed;top:calc(var(--safe-top) + 8px);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--orange-l);color:var(--orange);padding:8px 16px;border-radius:99px;font-size:12px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1100;border:1px solid rgba(224,112,32,.3);max-width:90vw;text-align:center;cursor:pointer}
+#offline-banner.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+
+/* UPDATE BANNER */
+#update-banner{position:fixed;top:calc(var(--safe-top) + 8px);left:50%;transform:translateX(-50%) translateY(-20px);background:var(--navy);color:var(--white);padding:8px 8px 8px 16px;border-radius:99px;font-size:12px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:1100;white-space:nowrap;border:1px solid rgba(245,216,0,.3);display:flex;align-items:center;gap:10px}
+#update-banner.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+#update-banner button{background:var(--yellow);color:var(--navy);border:none;border-radius:99px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif}

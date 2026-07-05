@@ -53,6 +53,9 @@ function populateEscalaos() {
   const sel = document.getElementById('ob-escalao');
   sel.innerHTML = '<option value="">— Escolhe o escalão —</option>';
   Object.keys(state.TEAMS).sort().forEach(e => addOption(sel, e, e));
+  const eq = document.getElementById('ob-equipa');
+  eq.innerHTML = '<option value="">— Escolhe a equipa —</option>';
+  eq.disabled = true;
 }
 
 export function onEscalaoChange() {
@@ -76,7 +79,7 @@ function setupStep3() {
   document.getElementById('ob-step3-confirm').style.display = needsKey ? 'none' : 'block';
   if (!needsKey) {
     const msgs = {
-      jogador: `🏐 A ver jogos de <strong>${state.profile.equipa}</strong>`,
+      jogador: `🏐 A ver jogos de <strong>${state.profile.equipa}</strong> (${state.profile.escalao})`,
       arbitro: '🟡 Acesso ao calendário e escala de arbitragem.',
       pavilhao: `🏟 Pavilhão <strong>${state.profile.campo}</strong> — registo de resultados ativo.`
     };
