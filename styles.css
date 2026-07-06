@@ -58,15 +58,26 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .hdr-live-dot{width:6px;height:6px;border-radius:50%;background:#e74c3c;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hdr-live-txt{font-size:10px;font-weight:700;color:#e74c3c;letter-spacing:.5px}
-.hdr-profile{background:var(--white);border:1px solid #000;border-radius:99px;padding:8px 8px;font-size:11px;color:#000;font-weight:600;cursor:pointer;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.hdr-profile{background:var(--white);border:1px solid #000;border-radius:99px;padding:8px 8px;font-size:11px;color:#000;font-weight:600;cursor:pointer;max-width:140px;min-width:90px;min-height:42px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 .hdr-club-logo{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid #000;background:var(--white)}
 .hdr-logo-escalao{display:inline-flex;align-items:center;gap:2px}
 .hdr-escalao{font-size:9px}
 .hdr-dot{font-size:16px}
 
 /* SCROLL + PAGES */
-#scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative}
 .page{display:none;padding:12px 14px 90px}.page.active{display:block}
+
+/* PULL TO REFRESH */
+#ptr-indicator{position:fixed;top:var(--safe-top);left:0;right:0;height:140px;display:flex;align-items:center;justify-content:center;transform:translateY(-140px);pointer-events:none;z-index:1200}
+#ptr-ring{width:36px;height:36px;padding:5px;background:var(--card);border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.18);overflow:visible}
+.ptr-arc{stroke:var(--blue-l);transition:stroke .15s}
+.ptr-arc-fill{fill:var(--blue-l);transition:fill .15s}
+#ptr-indicator.ready .ptr-arc{stroke:var(--blue)}
+#ptr-indicator.ready .ptr-arc-fill{fill:var(--blue)}
+#ptr-indicator.refreshing #ptr-ring{animation:spin .8s linear infinite}
+#ptr-indicator.refreshing .ptr-arc{stroke:var(--blue)}
+#ptr-indicator.refreshing .ptr-arc-fill{fill:var(--blue)}
 
 /* NAV */
 #nav{display:flex;background:var(--navy);border-top:2px solid var(--yellow);padding:0 0 var(--safe-bot);flex-shrink:0}
@@ -101,7 +112,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .match-team-abbr.away{background:var(--white);color:#7EB3F5;border:1.5px solid #000}
 .match-team-abbr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .match-team-name{font-size:11px;color:rgba(255,255,255,.7);line-height:1.2;font-weight:500}
-.match-team-name.my-team-name{font-weight:800;color:#fff}
+.match-team-name.my-team-name{font-weight:800;color:#fff;font-size:12.5px}
 .match-score{text-align:center;flex-shrink:0;min-width:64px}
 .match-score-num{font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:var(--white);line-height:1;letter-spacing:-2px}
 .match-score-sets{font-size:10px;color:rgba(255,255,255,.3);margin-top:5px;display:flex;gap:3px;justify-content:center;flex-wrap:wrap}
@@ -123,9 +134,9 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .sec-title{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
 
 /* GAME ITEM */
-.game-item{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.game-item{padding:11px 5px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .game-item:last-child{border-bottom:none}
-.game-time{text-align:center;flex-shrink:0;width:50px}
+.game-time{text-align:center;flex-shrink:0;width:50px;margin-right:-6px}
 .game-time-dia{font-size:9px;color:var(--txt3);text-transform:uppercase;font-weight:700}
 .game-time-hora{font-size:13px;font-weight:700;color:var(--blue)}
 .game-time-id{font-size:11px;color:var(--txt3);margin-top:8px}
@@ -138,10 +149,11 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .game-team-logo{width:16px;height:16px;border-radius:50%;object-fit:cover;flex-shrink:0}
 .class-team-cell{display:inline-flex;align-items:center;gap:5px;max-width:100%}
 .class-team-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.game-scores{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;margin:0 10px}
+.game-scores{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;margin:0 10px 0 2px}
 .game-score{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;flex-shrink:0}
 .game-score.win{color:var(--green)}.game-score.loss{color:var(--red)}
-.game-badge{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;flex-shrink:0;min-width:66px;text-align:center}
+.game-badge{font-size:10px;padding:4px 7px;border-radius:99px;font-weight:700;flex-shrink:0;min-width:66px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1px}
+.badge-top{font-size:8px;font-weight:600;opacity:.7}
 .badge-done{background:var(--blue-l);color:var(--blue-d)}
 .badge-pending{background:#fffbe0;color:#856404;min-width:auto}
 .badge-provisorio{background:var(--orange-l);color:var(--orange)}
@@ -151,7 +163,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .campo-pav:active{opacity:.6}
 .game-escalao{font-size:10px;color:var(--txt3);margin-top:2px}
 .sets-row{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
-.set-chip{font-size:10px;background:#f0f4ff;border-radius:4px;padding:2px 6px;color:var(--blue-d);font-weight:600}
+.set-chip{font-size:10px;border-radius:4px;padding:2px 6px;font-weight:600}
 
 /* FILTER BAR */
 .filter-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,black 80%,transparent 100%);mask-image:linear-gradient(to right,black 80%,transparent 100%)}
@@ -236,6 +248,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .profile-sheet h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--navy);margin-bottom:1rem}
 .profile-info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
 .profile-info-row:last-of-type{border-bottom:none}
+@media (orientation: landscape){
+  #profile-info{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px}
+  .profile-info-row{border-bottom:none;padding:6px 0}
+}
 .profile-info-label{color:var(--txt2)}
 .profile-info-val{font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:6px}
 .profile-club-logo{width:20px;height:20px;border-radius:50%;object-fit:cover;border:1.5px solid #000;background:var(--white)}

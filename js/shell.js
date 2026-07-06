@@ -2,16 +2,11 @@ import { state } from './state.js';
 import { clubLogoSlug } from './utils.js';
 import { mergeResults, startFirebaseSync } from './firebase.js';
 
-export function initApp() {
-  mergeResults();
-  state.activeEscalao = state.profile.escalao || Object.keys(state.TEAMS).sort()[0];
-  state.classEscalao = state.profile.escalao || Object.keys(state.TEAMS).sort()[0];
-  if (state.profile.escalao && state.profile.equipa) {
-    for (const [s, teams] of Object.entries(state.TEAMS[state.profile.escalao] || {})) {
-      if (teams.includes(state.profile.equipa)) { state.profile.serie = s; break; }
-    }
-    state.classSerie = state.profile.serie || '';
-  }
+// Só usa o que já está guardado em state.profile (localStorage) — nada disto
+// depende dos dados do Sheets, por isso pode (e deve) correr logo no arranque,
+// antes até do fetch às sheets começar, para nunca "piscar" o botão de perfil
+// ou o Logística com o estado por defeito enquanto os dados carregam.
+export function hydrateChrome() {
   const fn = { jogador:'🏃', treinador:'📋', dirigente:'🏅', arbitro:'🟡', pavilhao:'🏟' };
   const icon = `<span>${fn[state.profile.funcao]||''}</span>`;
   let hdrContent;
@@ -37,6 +32,19 @@ export function initApp() {
   if (state.profile.funcao === 'jogador') {
     document.getElementById('nav-logistica').style.display = 'none';
   }
+}
+
+export function initApp() {
+  mergeResults();
+  state.activeEscalao = state.profile.escalao || Object.keys(state.TEAMS).sort()[0];
+  state.classEscalao = state.profile.escalao || Object.keys(state.TEAMS).sort()[0];
+  if (state.profile.escalao && state.profile.equipa) {
+    for (const [s, teams] of Object.entries(state.TEAMS[state.profile.escalao] || {})) {
+      if (teams.includes(state.profile.equipa)) { state.profile.serie = s; break; }
+    }
+    state.classSerie = state.profile.serie || '';
+  }
+  hydrateChrome();
 
   Promise.all([
     import('./roles/shared.js'),
@@ -55,6 +63,7 @@ export function initApp() {
     logistica.renderTransport();
     logistica.renderFood();
     pavilhao.renderPavilhao();
+    restoreLastPage();
     startFirebaseSync(refreshAllViews);
   });
 }
@@ -83,6 +92,31 @@ export function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   if (btn) btn.classList.add('active');
   document.getElementById('scroll').scrollTop = 0;
+  localStorage.setItem('summercup_last_page', id);
+
+  // O pill ativo dos filtros da Classificação só pode ser centrado depois
+  // de a página estar mesmo visível (scrollIntoView falha em páginas
+  // escondidas) — refaz isso agora que "class" acabou de ficar ativa.
+  if (id === 'class') {
+    requestAnimationFrame(() => {
+      import('./roles/shared.js').then(shared => shared.scrollClassFiltersIntoView());
+    });
+  }
+}
+
+// Repõe a página em que o utilizador estava antes de um refresh (a página
+// recarregada começa sempre no Início por defeito no HTML estático). Não
+// depende dos dados do Sheets — pode correr logo no arranque, tal como o
+// hydrateChrome(), para nunca chegar a mostrar o Início por breve que seja.
+export function restoreLastPage() {
+  const id = localStorage.getItem('summercup_last_page');
+  if (!id || id === 'home') return;
+  const page = document.getElementById('page-' + id);
+  if (!page) return;
+  const btn = id === 'pavilhao'
+    ? document.getElementById('nav-logistica')
+    : document.querySelector(`.nav-btn[onclick*="showPage('${id}'"]`);
+  showPage(id, btn);
 }
 
 export function showLogTab(id, btn) {

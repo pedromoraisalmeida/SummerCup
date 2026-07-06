@@ -14,7 +14,14 @@
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-<div id="app">
+<div id="app" style="visibility:hidden">
+
+<div id="ptr-indicator">
+  <svg id="ptr-ring" viewBox="0 0 32 32">
+    <circle id="ptr-arc" class="ptr-arc" cx="16" cy="16" r="13" fill="none" stroke-width="3" stroke-linecap="butt" transform="rotate(-90 16 16)"/>
+    <polygon id="ptr-arrowhead" class="ptr-arc-fill" points="-2,-3.5 3,0 -2,3.5"/>
+  </svg>
+</div>
 
 <!-- ONBOARDING -->
 <div id="onboarding">
@@ -129,6 +136,31 @@
   <button class="nav-btn" id="nav-extra" onclick="showPage('news',this)"><span class="nav-icon">📰</span>Notícias</button>
 </div>
 
+<script>
+// Corre de imediato (script normal, não "module" — não é adiado), antes da
+// primeira pintura do ecrã, para repor a última página visitada sem chegar
+// a mostrar/piscar "Início" por um instante. Se for a primeira vez (nada
+// guardado ainda), não faz nada e mantém-se o "Início" por defeito do HTML.
+// A versão em js/shell.js (restoreLastPage) mantém-se para depois dos dados
+// carregarem. A app começa escondida (ver style="visibility:hidden" no
+// #app) e só é revelada no fim, já com a página certa ativa — garante que
+// nunca se chega a pintar o ecrã com o estado errado, nem por um frame.
+(function () {
+  var id = localStorage.getItem('summercup_last_page');
+  var page = id && id !== 'home' ? document.getElementById('page-' + id) : null;
+  if (page) {
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-btn').forEach(function (b) { b.classList.remove('active'); });
+    page.classList.add('active');
+    var btn = id === 'pavilhao'
+      ? document.getElementById('nav-logistica')
+      : document.querySelector('.nav-btn[onclick*="showPage(\'' + id + '\'"]');
+    if (btn) btn.classList.add('active');
+  }
+  document.getElementById('app').style.visibility = 'visible';
+})();
+</script>
+
 <!-- RESULT MODAL -->
 <div id="result-modal" onclick="closeResultModal(event)">
   <div class="result-sheet" id="result-sheet-inner">
@@ -146,8 +178,10 @@
   <div class="profile-sheet">
     <h3>O meu perfil</h3>
     <div id="profile-info"></div>
-    <button class="ob-btn" style="margin-top:1rem;background:var(--navy);color:var(--yellow)" onclick="resetProfile()">Mudar perfil</button>
-    <button class="ob-btn ob-btn-sec" style="color:var(--txt2);border-color:var(--border);margin-top:8px" onclick="closeProfile(null)">Fechar</button>
+    <div style="display:flex;gap:10px;margin-top:1rem">
+      <button class="ob-btn" style="flex:1;margin-top:0;background:var(--navy);color:var(--yellow)" onclick="resetProfile()">Mudar perfil</button>
+      <button class="ob-btn ob-btn-sec" style="flex:1;margin-top:0;color:var(--txt2);border-color:var(--border)" onclick="closeProfile(null)">Fechar</button>
+    </div>
   </div>
 </div>
 

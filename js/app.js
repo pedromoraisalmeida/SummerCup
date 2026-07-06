@@ -1,7 +1,10 @@
 import { loadAllData } from './data.js';
 import { state } from './state.js';
-import { initApp } from './shell.js';
+import { initApp, hydrateChrome, restoreLastPage } from './shell.js';
+import { initPullToRefresh } from './pulltorefresh.js';
 import './onboarding.js';
+
+initPullToRefresh();
 
 // 100dvh não é fiável em todos os fabricantes Android (ex. barras de navegação
 // tradicionais de 3 botões nalguns Xiaomi/MIUI) — medir a altura real do
@@ -54,8 +57,13 @@ function isProfileComplete(p) {
 // Show a spinner in its place until the real content is ready.
 if (isProfileComplete(state.profile)) {
   document.getElementById('onboarding').style.display = 'none';
-  const homeContent = document.getElementById('home-content');
-  if (homeContent) homeContent.innerHTML = '<div class="loading-spinner"></div><div class="loading-text">A atualizar os dados existentes...</div>';
+  const loadingHTML = '<div class="loading-spinner"></div><div class="loading-text">A atualizar os dados existentes...</div>';
+  ['home-content', 'jogos-list', 'class-content', 'transport-content', 'food-content', 'pavilhao-content'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = loadingHTML;
+  });
+  hydrateChrome();
+  restoreLastPage();
 }
 
 loadAllData().then(() => {

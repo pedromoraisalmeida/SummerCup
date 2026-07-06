@@ -77,6 +77,19 @@ export function buildClassSeries() {
   if(active) active.scrollIntoView({inline:'center',block:'nearest'});
 }
 
+// scrollIntoView() não funciona em elementos dentro de uma página escondida
+// (display:none) — quando os filtros são construídos numa página que não
+// está ativa no momento (ex. refresh feito noutra página), o pill ativo
+// fica correto mas não centrado. Chamar isto de novo quando a página
+// "class" se torna visível corrige isso.
+export function scrollClassFiltersIntoView() {
+  ['filter-class-escalao', 'filter-class-serie'].forEach(id => {
+    const bar = document.getElementById(id);
+    const active = bar && bar.querySelector('.filter-pill.active');
+    if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+  });
+}
+
 export function setClassEscalao(e, el) {
   state.classEscalao=e; state.classSerie='';
   document.querySelectorAll('#filter-class-escalao .filter-pill').forEach(p=>p.classList.remove('active'));
