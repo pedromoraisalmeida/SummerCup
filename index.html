@@ -54,6 +54,22 @@
       <label class="ob-label">Equipa</label>
       <select class="ob-select" id="ob-equipa" disabled><option value="">— Escolhe a equipa —</option></select>
     </div>
+    <div id="ob-step2-treinador" style="display:none">
+      <div class="ob-heading">Código de clube</div>
+      <div class="ob-desc">Introduz o código atribuído ao teu clube pela organização.</div>
+      <div class="ob-info-box">🔑 O código foi fornecido pela organização.</div>
+      <input class="ob-input" id="ob-treinador-code" type="text" placeholder="Código de clube" autocomplete="off"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();validateTreinadorCode();}">
+      <button class="ob-btn ob-btn-sec" id="ob-treinador-validate-btn" style="margin-top:.5rem" onclick="validateTreinadorCode()">Validar código</button>
+      <div class="ob-error" id="ob-treinador-error">Código inválido. Verifica e tenta novamente.</div>
+      <div id="ob-treinador-equipa" style="display:none;margin-top:1rem">
+        <div class="ob-info-box" id="ob-treinador-clube-confirm"></div>
+        <label class="ob-label">Escalão</label>
+        <select class="ob-select" id="ob-escalao-tr" onchange="onEscalaoChangeTreinador()"><option value="">— Escolhe o escalão —</option></select>
+        <label class="ob-label">Equipa</label>
+        <select class="ob-select" id="ob-equipa-tr" disabled><option value="">— Escolhe a equipa —</option></select>
+      </div>
+    </div>
     <div id="ob-step2-arbitro" style="display:none">
       <div class="ob-heading">Bem-vindo, árbitro!</div>
       <div class="ob-desc">Introduz o teu código de árbitro para acederes à tua escala pessoal.</div>

@@ -59,3 +59,10 @@ export const CAMPO_PAVILHAO = Object.fromEntries(
 );
 
 export const ACCESS_KEY = "SummerCup2026";
+
+// ── CÓDIGO DE CLUBE (Treinador) ──
+// Validado via Apps Script contra uma Google Sheet privada (não publicada),
+// que nunca é enviada para o browser — só o resultado da consulta a um
+// código específico. O código do clube não fica guardado em lado nenhum
+// deste repositório.
+export const TREINADOR_CODE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyJMn9futj6vI-4fj7_6YfPp9eH2tczsXfxCe_ojRw8PxW-vq4gz5nehw4p5CQW9kjjwA/exec";
