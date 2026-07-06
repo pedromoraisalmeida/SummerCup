@@ -29,8 +29,12 @@ self.addEventListener('fetch', (event) => {
   // uma sessão anterior.
   if (new URL(event.request.url).origin !== self.location.origin) return;
 
+  // cache:'no-store' ignora a cache HTTP normal do browser (que o GitHub
+  // Pages define com Cache-Control: max-age=600) — sem isto, a "rede
+  // primeiro" podia devolver uma resposta HTTP cacheada de até 10 minutos
+  // atrás em vez de ir mesmo ao servidor, atrasando a chegada de updates.
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-store' })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
