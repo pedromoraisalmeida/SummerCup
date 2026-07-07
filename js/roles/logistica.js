@@ -38,6 +38,11 @@ export function renderTransport() {
     return;
   }
   if(!state.profile.equipa){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Sem equipa selecionada</div></div>`;return;}
+  // Se a equipa/escalão não existir de todo na sheet de transportes (nenhum
+  // dia), considera-se deslocação a pé — não é uma falha de dados, é o
+  // pavilhão ficar junto ao alojamento.
+  const existsInSheet=state.TRANSPORTS.some(t=>t.equipa===state.profile.equipa&&t.escalao===state.profile.escalao);
+  if(!existsInSheet){el.innerHTML=transportCardHTML({ape:true});return;}
   const myT=state.TRANSPORTS.filter(t=>t.equipa===state.profile.equipa&&t.escalao===state.profile.escalao&&dayNum(t.dia)===state.activeLogDia);
   if(!myT.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Nenhum transporte para ${state.profile.equipa}</div></div>`;return;}
   const partidas=myT.filter(t=>t.tipo==='partida');

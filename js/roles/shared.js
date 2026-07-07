@@ -173,12 +173,12 @@ export function renderClass() {
   const pc=i=>i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'';
   const pi=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
   let h=`<div class="card"><div class="card-header"><div class="card-title">${state.classEscalao} · Série ${state.classSerie}</div></div>
-    <table class="class-table"><thead><tr><th>#</th><th>Equipa</th><th>J</th><th>V</th><th>D</th><th class="col-sets">S+</th><th class="col-sets">S-</th><th class="col-sets">Rácio</th><th class="col-sets">P+</th><th class="col-sets">P-</th><th class="col-sets">Rácio</th><th>FC</th><th>Pts</th></tr></thead><tbody>`;
+    <table class="class-table"><thead><tr><th>#</th><th>Equipa</th><th>J</th><th>V</th><th>D</th><th class="col-sets">S+</th><th class="col-sets">S-</th><th class="col-sets">Rácio</th><th class="col-sets">P+</th><th class="col-sets">P-</th><th class="col-sets">Rácio</th><th class="col-sets">FC</th><th>Pts</th></tr></thead><tbody>`;
   sorted.forEach(([t,s],i)=>{
     const me=t===state.profile.equipa;
     h+=`<tr class="${me?'my-row':''}"><td><span class="pos-num ${pc(i)}">${pi(i)||i+1}</span></td>
       <td style="font-size:12px;font-weight:${me?700:400};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span class="class-team-cell">${teamLogoIcon(t)}<span class="class-team-name">${t}</span></span></td>
-      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa)}</td><td>${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
+      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa)}</td><td class="col-sets">${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
   });
   h+=`</tbody></table><div class="class-note">Apenas os jogos com resultados oficiais são contabilizados</div></div>`;
   const sg=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie).sort((a,b)=>a.id-b.id);

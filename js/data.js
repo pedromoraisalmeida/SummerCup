@@ -81,12 +81,28 @@ export function rowsToTransports(rows) {
   map.forEach(({ escalao, equipa, rows }) => {
     rows.forEach((r, idx) => {
       const tipo = idx === 0 ? 'partida' : 'regresso';
-      const orig = r['Origem'] || '';
-      const ape = !orig || orig.toLowerCase().includes('a pé');
-      const legs = [];
-      if (!ape && orig) {
-        legs.push({ orig, dest: r['Destino'], hora: r['Hora'] });
-        if (r['Origem2']) legs.push({ orig: r['Origem2'], dest: r['Destino2'], hora: r['Hora2'] });
+      // As duas colunas (Origem/Destino/Hora e Origem2/Destino2/Hora2)
+      // interessam sempre, não só quando há transbordo:
+      // - as duas preenchidas → transbordo (1.ª coluna = origem do
+      //   percurso, 2.ª coluna = etapa do transbordo, por esta ordem);
+      // - só a 2.ª preenchida → é o percurso principal (sem transbordo),
+      //   não uma deslocação a pé;
+      // - só a 1.ª preenchida → percurso simples, como já acontecia.
+      const orig1 = r['Origem'] || '';
+      const orig2 = r['Origem2'] || '';
+      let legs = [];
+      let ape = false;
+      if (orig1 && orig2) {
+        legs = [
+          { orig: orig1, dest: r['Destino'], hora: r['Hora'] },
+          { orig: orig2, dest: r['Destino2'], hora: r['Hora2'] },
+        ];
+      } else if (orig2) {
+        legs = [{ orig: orig2, dest: r['Destino2'], hora: r['Hora2'] }];
+      } else if (orig1) {
+        legs = [{ orig: orig1, dest: r['Destino'], hora: r['Hora'] }];
+      } else {
+        ape = true;
       }
       result.push({ escalao, equipa, tipo, ape, legs, dia: r['Data'] || '' });
     });
