@@ -211,6 +211,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .transport-key-btn{width:100%;padding:12px;background:var(--navy);color:var(--yellow);font-size:14px;font-weight:700;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif}
 
 /* LOGISTICA TABS */
+.aloj-card{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
+.aloj-icon{font-size:22px;flex-shrink:0}
+.aloj-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--txt3)}
+.aloj-val{font-size:14px;font-weight:600;color:var(--txt);margin-top:2px}
 .log-tabs{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px}
 .log-tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:600;color:var(--txt2);cursor:pointer;border:none;background:none;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
 .log-tab.active{background:var(--navy);color:var(--yellow)}

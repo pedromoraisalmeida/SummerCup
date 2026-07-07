@@ -59,6 +59,7 @@ export function initApp() {
     jogador.renderHome();
     shared.renderJogos();
     shared.renderClass();
+    logistica.renderAlojamento();
     logistica.buildFilterLogDia();
     logistica.renderTransport();
     logistica.renderFood();

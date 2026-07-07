@@ -1,7 +1,14 @@
 import { state } from '../state.js';
 import { ACCESS_KEY } from '../config.js';
-import { dayNum } from '../utils.js';
+import { dayNum, sameText } from '../utils.js';
 import { wireFilterBarScroll } from './shared.js';
+
+export function renderAlojamento() {
+  const el=document.getElementById('log-alojamento');
+  if(!el)return;
+  const aloj=(state.profile.equipa&&state.profile.escalao)?state.EQUIPA_ALOJAMENTO[state.profile.escalao+'||'+state.profile.equipa]:null;
+  el.innerHTML=aloj?`<div class="aloj-card"><span class="aloj-icon">🏠</span><div><div class="aloj-label">Alojamento</div><div class="aloj-val">${aloj}</div></div></div>`:'';
+}
 
 export function buildFilterLogDia() {
   const days=[...new Set([
@@ -41,9 +48,9 @@ export function renderTransport() {
   // Se a equipa/escalão não existir de todo na sheet de transportes (nenhum
   // dia), considera-se deslocação a pé — não é uma falha de dados, é o
   // pavilhão ficar junto ao alojamento.
-  const existsInSheet=state.TRANSPORTS.some(t=>t.equipa===state.profile.equipa&&t.escalao===state.profile.escalao);
+  const existsInSheet=state.TRANSPORTS.some(t=>sameText(t.equipa,state.profile.equipa)&&sameText(t.escalao,state.profile.escalao));
   if(!existsInSheet){el.innerHTML=transportCardHTML({ape:true});return;}
-  const myT=state.TRANSPORTS.filter(t=>t.equipa===state.profile.equipa&&t.escalao===state.profile.escalao&&dayNum(t.dia)===state.activeLogDia);
+  const myT=state.TRANSPORTS.filter(t=>sameText(t.equipa,state.profile.equipa)&&sameText(t.escalao,state.profile.escalao)&&dayNum(t.dia)===state.activeLogDia);
   if(!myT.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Nenhum transporte para ${state.profile.equipa}</div></div>`;return;}
   const partidas=myT.filter(t=>t.tipo==='partida');
   const regressos=myT.filter(t=>t.tipo==='regresso');
@@ -80,7 +87,7 @@ export function renderFood() {
     el.innerHTML=`<div class="empty"><div class="empty-icon">🍽</div><div class="empty-txt">Seleciona equipa no onboarding.</div></div>`;
     return;
   }
-  const myFood = state.ALIMENTOS.filter(r => r['Competição'] === state.profile.escalao && r['Equipa'] === state.profile.equipa && dayNum(r['Data'])===state.activeLogDia);
+  const myFood = state.ALIMENTOS.filter(r => sameText(r['Competição'],state.profile.escalao) && sameText(r['Equipa'],state.profile.equipa) && dayNum(r['Data'])===state.activeLogDia);
   if (!myFood.length) {
     el.innerHTML=`<div class="empty"><div class="empty-icon">🍽</div><div class="empty-txt">Sem informação de alimentação para ${state.profile.equipa}.</div></div>`;
     return;

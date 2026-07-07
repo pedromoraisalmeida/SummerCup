@@ -3,6 +3,13 @@ import { CAMPO_PAVILHAO } from './config.js';
 
 export function shortTeam(n) { if (!n) return ''; return n.length > 16 ? n.split(' ')[0] : n; }
 
+// Compara nomes de equipa/escalão ignorando maiúsculas/minúsculas e espaços
+// a mais — as sheets de Transportes/Alimentação por vezes têm os nomes em
+// maiúsculas, ao contrário da sheet de Jogos (fonte do state.profile.equipa).
+export function sameText(a, b) {
+  return (a || '').trim().toLowerCase() === (b || '').trim().toLowerCase();
+}
+
 export function campoLabel(campo, withPav = true) {
   if (!campo) return '';
   if (!withPav) return `📌 ${campo}`;

@@ -69,6 +69,19 @@ export function rowsToEquipaClube(rows) {
   return map;
 }
 
+// Indexado por escalão+equipa (não só equipa): a mesma equipa pode
+// aparecer em mais do que um escalão, e nada garante que fique sempre no
+// mesmo alojamento em ambos.
+export function rowsToEquipaAlojamento(rows) {
+  const map = {};
+  rows.forEach(r => {
+    if (r['Equipa'] && r['Alojamento'] && r['Competição']) {
+      map[r['Competição'] + '||' + r['Equipa']] = r['Alojamento'];
+    }
+  });
+  return map;
+}
+
 export function rowsToTransports(rows) {
   const map = new Map();
   rows.forEach(r => {
@@ -139,7 +152,9 @@ export async function loadAllData() {
     const g2 = parseCSV(r2).map((r, i) => rowToGame(r, g1.length + i));
     state.GAMES_BASE = [...g1, ...g2].filter(g => g.eA && g.eB);
     state.TEAMS = buildTeamsFromGames(state.GAMES_BASE);
-    state.EQUIPA_CLUBE = rowsToEquipaClube(parseCSV(rEquipas));
+    const equipasRows = parseCSV(rEquipas);
+    state.EQUIPA_CLUBE = rowsToEquipaClube(equipasRows);
+    state.EQUIPA_ALOJAMENTO = rowsToEquipaAlojamento(equipasRows);
     state.TRANSPORTS = rowsToTransports(transTexts.flatMap(t => parseCSV(t)));
     state.ALIMENTOS = alimTexts.flatMap(t => parseCSV(t));
   } catch(e) {
