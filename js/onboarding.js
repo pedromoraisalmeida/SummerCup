@@ -2,6 +2,7 @@ import { CAMPO_CODES, ACCESS_KEY, TREINADOR_CODE_ENDPOINT } from './config.js';
 import { state } from './state.js';
 
 let treinadorClube = null;
+let treinadorTodos = false;
 
 export function selectFuncao(f, el) {
   document.querySelectorAll('.ob-card').forEach(c => c.classList.remove('sel'));
@@ -36,6 +37,7 @@ export function setupStep2() {
     document.getElementById('ob-treinador-error').classList.remove('show');
     document.getElementById('ob-treinador-equipa').style.display = 'none';
     treinadorClube = null;
+    treinadorTodos = false;
     btn.disabled = true;
     return;
   }
@@ -68,11 +70,16 @@ export async function validateTreinadorCode() {
     const res = await fetch(`${TREINADOR_CODE_ENDPOINT}?codigo=${encodeURIComponent(codigo)}`);
     const data = await res.json();
     if (data.valido) {
+      treinadorTodos = !!data.todos;
       treinadorClube = data.clube;
       state.profile.clube = data.clube;
-      document.getElementById('ob-treinador-clube-confirm').innerHTML = `✓ Código válido — <strong>${data.clube}</strong>`;
+      const confirmMsg = treinadorTodos
+        ? '✓ Código válido — <strong>acesso a todos os escalões e equipas</strong>'
+        : `✓ Código válido — <strong>${data.clube}</strong>`;
+      document.getElementById('ob-treinador-clube-confirm').innerHTML = confirmMsg;
       document.getElementById('ob-treinador-equipa').style.display = 'block';
-      populateEscalaosParaClube(data.clube);
+      if (treinadorTodos) populateEscalaosTodosTreinador();
+      else populateEscalaosParaClube(data.clube);
       input.disabled = true;
       btn.style.display = 'none';
     } else {
@@ -100,6 +107,17 @@ function populateEscalaosParaClube(clube) {
   eq.disabled = true;
 }
 
+// Código especial da organização: dá acesso a todos os escalões/equipas,
+// sem filtrar por clube — os dropdowns mostram tudo, tal como no Jogador.
+function populateEscalaosTodosTreinador() {
+  const sel = document.getElementById('ob-escalao-tr');
+  sel.innerHTML = '<option value="">— Escolhe o escalão —</option>';
+  Object.keys(state.TEAMS).sort().forEach(e => addOption(sel, e, e));
+  const eq = document.getElementById('ob-equipa-tr');
+  eq.innerHTML = '<option value="">— Escolhe a equipa —</option>';
+  eq.disabled = true;
+}
+
 export function onEscalaoChangeTreinador() {
   const e = document.getElementById('ob-escalao-tr').value;
   const eq = document.getElementById('ob-equipa-tr');
@@ -107,9 +125,9 @@ export function onEscalaoChangeTreinador() {
   eq.disabled = !e;
   document.getElementById('ob-btn2').disabled = true;
   if (!e) return;
-  const teams = [...new Set(Object.values(state.TEAMS[e]).flat())]
-    .filter(t => state.EQUIPA_CLUBE[t] === treinadorClube)
-    .sort();
+  let teams = [...new Set(Object.values(state.TEAMS[e]).flat())];
+  if (!treinadorTodos) teams = teams.filter(t => state.EQUIPA_CLUBE[t] === treinadorClube);
+  teams.sort();
   teams.forEach(t => addOption(eq, t, t));
   eq.onchange = () => {
     if (eq.value) { state.profile.escalao = e; state.profile.equipa = eq.value; }
