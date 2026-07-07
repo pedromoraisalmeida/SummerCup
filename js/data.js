@@ -99,13 +99,23 @@ export async function loadAllData() {
   const loadingEl = document.getElementById('ob-loading');
   if (loadingEl) loadingEl.style.display = 'block';
   try {
+    // As Sheets do Google, quando publicadas na web, ficam em cache do lado
+    // do Google e podem demorar a refletir edições recentes de forma
+    // inconsistente entre pedidos (por vezes mostra a versão nova, por
+    // vezes volta a mostrar uma mais antiga). O parâmetro "_" muda a cada
+    // carregamento, o que faz o Google (e a cache HTTP do próprio browser,
+    // desligada aqui com cache:'no-store') tratar o pedido como novo em vez
+    // de devolver uma resposta previamente guardada.
+    const bust = `_=${Date.now()}`;
+    const withBust = (url) => url + (url.includes('?') ? '&' : '?') + bust;
+    const fetchFresh = (url) => fetch(withBust(url), { cache: 'no-store' });
     const mkUrl = (base, gid) => `${base}?gid=${gid}&single=true&output=csv`;
     const [r1, r2, rEquipas, ...rest] = await Promise.all([
-      fetch(SHEET_JOGOS_1).then(r => r.text()),
-      fetch(SHEET_JOGOS_2).then(r => r.text()),
-      fetch(SHEET_EQUIPAS).then(r => r.text()),
-      ...SHEET_TRANS_GIDS.map(gid => fetch(mkUrl(SHEET_TRANS_BASE, gid)).then(r => r.text())),
-      ...SHEET_ALIM_GIDS.map(gid => fetch(mkUrl(SHEET_ALIM_BASE, gid)).then(r => r.text())),
+      fetchFresh(SHEET_JOGOS_1).then(r => r.text()),
+      fetchFresh(SHEET_JOGOS_2).then(r => r.text()),
+      fetchFresh(SHEET_EQUIPAS).then(r => r.text()),
+      ...SHEET_TRANS_GIDS.map(gid => fetchFresh(mkUrl(SHEET_TRANS_BASE, gid)).then(r => r.text())),
+      ...SHEET_ALIM_GIDS.map(gid => fetchFresh(mkUrl(SHEET_ALIM_BASE, gid)).then(r => r.text())),
     ]);
     const transTexts = rest.slice(0, SHEET_TRANS_GIDS.length);
     const alimTexts  = rest.slice(SHEET_TRANS_GIDS.length);
