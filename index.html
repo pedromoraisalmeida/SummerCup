@@ -117,6 +117,13 @@
   </div>
 </div>
 
+<!-- Fica no fluxo do layout (não é overlay): quando aparece, empurra o
+     #scroll para baixo em vez de tapar conteúdo por cima. -->
+<div id="update-banner">
+  <span>🔄 Nova versão disponível</span>
+  <button onclick="location.reload()">Atualizar</button>
+</div>
+
 <div id="scroll">
   <div class="page active" id="page-home"><div id="home-content"></div></div>
   <div class="page" id="page-jogos">
@@ -208,11 +215,6 @@
 
 <div id="offline-banner" onclick="this.classList.remove('show')">
   <span>⚠️ Sem ligação — os dados podem não estar atualizados</span>
-</div>
-
-<div id="update-banner">
-  <span>🔄 Nova versão disponível</span>
-  <button onclick="location.reload()">Atualizar</button>
 </div>
 
 <script type="module" src="./js/app.js"></script>

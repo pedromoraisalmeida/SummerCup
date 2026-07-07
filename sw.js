@@ -4,6 +4,14 @@
 // pedido tenta sempre ir buscar a versão mais recente ao servidor primeiro.
 const CACHE_NAME = 'summercup-v1';
 
+// O browser só deteta um Service Worker "novo" comparando este ficheiro
+// byte a byte com o que já tem instalado — se só mudarem outros ficheiros
+// da app (HTML/CSS/JS), este ficheiro fica igual e não há update a
+// detetar. Por isso, esta versão é incrementada manualmente a cada
+// commit/push, só para forçar o browser a ver sempre um sw.js "diferente"
+// e mostrar o aviso de "nova versão disponível" a quem já tem a app aberta.
+const SW_VERSION = 2;
+
 self.addEventListener('install', () => {
   // Não espera pelos separadores antigos fecharem — assume o controlo assim
   // que estiver pronto.

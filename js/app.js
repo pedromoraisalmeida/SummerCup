@@ -25,7 +25,13 @@ if ('serviceWorker' in navigator) {
   // instalação da própria SW (essa não deve mostrar o aviso).
   const hadController = !!navigator.serviceWorker.controller;
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then((reg) => {
+      // Uma app já aberta (sem o utilizador recarregar) nunca verifica
+      // sozinha se há um sw.js novo — só o faria na próxima navegação.
+      // Este intervalo força essa verificação em segundo plano, para o
+      // aviso de atualização aparecer mesmo sem o utilizador tocar em nada.
+      setInterval(() => reg.update(), 60 * 1000);
+    });
   });
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) return;
