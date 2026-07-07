@@ -184,6 +184,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .pos-num{font-family:'Syne',sans-serif;font-size:14px;font-weight:800}
 .pos-1{color:var(--yellow-d)}.pos-2{color:var(--txt2)}.pos-3{color:#8B5E3C}
 .pts-num{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--blue)}
+.class-note{padding:8px 14px;font-size:11px;color:var(--txt2);text-align:center;border-top:1px solid var(--border)}
 
 /* TRANSPORT */
 .transport-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:8px}
