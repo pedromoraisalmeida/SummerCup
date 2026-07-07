@@ -92,7 +92,7 @@ export function showPage(id, btn) {
   document.getElementById('page-' + id).classList.add('active');
   if (btn) btn.classList.add('active');
   document.getElementById('scroll').scrollTop = 0;
-  localStorage.setItem('summercup_last_page', id);
+  sessionStorage.setItem('summercup_last_page', id);
 
   // O pill ativo dos filtros da Classificação só pode ser centrado depois
   // de a página estar mesmo visível (scrollIntoView falha em páginas
@@ -109,7 +109,7 @@ export function showPage(id, btn) {
 // depende dos dados do Sheets — pode correr logo no arranque, tal como o
 // hydrateChrome(), para nunca chegar a mostrar o Início por breve que seja.
 export function restoreLastPage() {
-  const id = localStorage.getItem('summercup_last_page');
+  const id = sessionStorage.getItem('summercup_last_page');
   if (!id || id === 'home') return;
   const page = document.getElementById('page-' + id);
   if (!page) return;

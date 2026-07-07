@@ -157,12 +157,15 @@
 // primeira pintura do ecrã, para repor a última página visitada sem chegar
 // a mostrar/piscar "Início" por um instante. Se for a primeira vez (nada
 // guardado ainda), não faz nada e mantém-se o "Início" por defeito do HTML.
-// A versão em js/shell.js (restoreLastPage) mantém-se para depois dos dados
-// carregarem. A app começa escondida (ver style="visibility:hidden" no
-// #app) e só é revelada no fim, já com a página certa ativa — garante que
+// Usa sessionStorage (não localStorage) de propósito: mantém-se num F5/
+// refresh normal (mesma sessão do separador), mas esvazia-se sempre que a
+// app/browser é fechado ou "morto" e reaberto — nesse caso volta sempre ao
+// Início. A versão em js/shell.js (restoreLastPage) mantém-se para depois
+// dos dados carregarem. A app começa escondida (ver style="visibility:hidden"
+// no #app) e só é revelada no fim, já com a página certa ativa — garante que
 // nunca se chega a pintar o ecrã com o estado errado, nem por um frame.
 (function () {
-  var id = localStorage.getItem('summercup_last_page');
+  var id = sessionStorage.getItem('summercup_last_page');
   var page = id && id !== 'home' ? document.getElementById('page-' + id) : null;
   if (page) {
     document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
