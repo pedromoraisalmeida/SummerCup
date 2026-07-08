@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { gameItemHTML, teamLogoIcon, isAprovado } from '../utils.js';
+import { gameItemHTML, teamLogoIcon, isAprovado, dayNum } from '../utils.js';
 
 export function wireFilterBarScroll(bar) {
   const check = () => bar.classList.toggle('scrolled-end', bar.scrollLeft+bar.clientWidth>=bar.scrollWidth-4);
@@ -9,22 +9,30 @@ export function wireFilterBarScroll(bar) {
 
 export function buildFilterEscalao() {
   const esc=[...new Set(state.currentGames.map(g=>g.escalao))].sort();
-  let h='';
-  if (state.profile.escalao) h=`<div class="filter-pill active" onclick="setEscalao('${state.profile.escalao}',this)">${state.profile.escalao} ★</div>`;
-  esc.forEach(e=>{if(e!==state.profile.escalao)h+=`<div class="filter-pill ${!state.profile.escalao?'active':''}" onclick="setEscalao('${e}',this)">${e}</div>`;});
+  let h=`<div class="filter-pill ${state.activeEscalao==='todos'?'active':''}" onclick="setEscalao('todos',this)">Todos os jogos</div>`;
+  if (state.profile.escalao) h+=`<div class="filter-pill ${state.activeEscalao===state.profile.escalao?'active':''}" onclick="setEscalao('${state.profile.escalao}',this)">${state.profile.escalao} ★</div>`;
+  esc.forEach(e=>{if(e!==state.profile.escalao)h+=`<div class="filter-pill ${state.activeEscalao===e?'active':''}" onclick="setEscalao('${e}',this)">${e}</div>`;});
   const bar=document.getElementById('filter-escalao');
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
-  if(!state.profile.escalao) state.activeEscalao=esc[0];
 }
 
 export function buildFilterDia() {
   const dias = [...new Set(state.currentGames.map(g => g.dia))].sort();
-  let h = `<div class="filter-pill active" onclick="setDia('todos',this)">Todos os dias</div>`;
-  dias.forEach(d => h += `<div class="filter-pill" onclick="setDia('${d}',this)">${d.replace(/^0/, '').replace('/jul.', ' Jul.')}</div>`);
+  // Por defeito, seleciona o dia de hoje se coincidir com um dia do
+  // torneio (só na primeira construção do filtro — não força o dia atual
+  // se o utilizador já tiver escolhido outro).
+  if (state.activeDia === 'todos') {
+    const todayDia = dias.find(d => dayNum(d) === new Date().getDate());
+    if (todayDia) state.activeDia = todayDia;
+  }
+  let h = `<div class="filter-pill ${state.activeDia==='todos'?'active':''}" onclick="setDia('todos',this)">Todos os dias</div>`;
+  dias.forEach(d => h += `<div class="filter-pill ${state.activeDia===d?'active':''}" onclick="setDia('${d}',this)">${d.replace(/^0/, '').replace('/jul.', ' Jul.')}</div>`);
   const bar=document.getElementById('filter-dia');
   bar.innerHTML = h;
   wireFilterBarScroll(bar);
+  const active=bar.querySelector('.filter-pill.active');
+  if(active) active.scrollIntoView({inline:'center',block:'nearest'});
 }
 
 export function setEscalao(e, el) {
@@ -42,7 +50,7 @@ export function setDia(d, el) {
 }
 
 export function renderJogos() {
-  let f=state.currentGames.filter(g=>g.escalao===state.activeEscalao);
+  let f=state.activeEscalao==='todos'?[...state.currentGames]:state.currentGames.filter(g=>g.escalao===state.activeEscalao);
   if(state.activeDia!=='todos')f=f.filter(g=>g.dia===state.activeDia);
   f.sort((a,b)=>a.id-b.id);
   if(!f.length){document.getElementById('jogos-list').innerHTML=`<div class="empty"><div class="empty-icon">📅</div><div class="empty-txt">Nenhum jogo</div></div>`;return;}

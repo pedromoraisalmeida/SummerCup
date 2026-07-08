@@ -144,6 +144,16 @@ export function openProfile() {
   const transportRowStyle = state.profile.funcao === 'jogador' ? ' style="display:none"' : '';
   rows+=`<div class="profile-info-row"${transportRowStyle}><span class="profile-info-label">Transportes</span><span class="profile-info-val">${state.profile.transportAccess?'✓ Desbloqueado':'Bloqueado'}</span></div>`;
   document.getElementById('profile-info').innerHTML=rows;
+
+  // Treinador que entrou com o código da Organização: "Mudar perfil" dá
+  // lugar a "Mudar Equipa", que volta diretamente aos dropdowns de
+  // escalão/equipa sem pedir o código outra vez (ver changeEquipaTreinador
+  // em onboarding.js). Qualquer outro perfil mantém o comportamento normal.
+  const isOrgTreinador = state.profile.funcao === 'treinador' && state.profile.clube === 'Organização';
+  const primaryBtn = document.getElementById('profile-primary-btn');
+  primaryBtn.textContent = isOrgTreinador ? 'Mudar Equipa' : 'Mudar perfil';
+  primaryBtn.onclick = isOrgTreinador ? () => window.changeEquipaTreinador() : () => window.resetProfile();
+
   document.getElementById('profile-panel').classList.add('open');
 }
 

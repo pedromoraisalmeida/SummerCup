@@ -45,13 +45,12 @@ export function renderTransport() {
     return;
   }
   if(!state.profile.equipa){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Sem equipa selecionada</div></div>`;return;}
-  // Se a equipa/escalão não existir de todo na sheet de transportes (nenhum
-  // dia), considera-se deslocação a pé — não é uma falha de dados, é o
-  // pavilhão ficar junto ao alojamento.
-  const existsInSheet=state.TRANSPORTS.some(t=>sameText(t.equipa,state.profile.equipa)&&sameText(t.escalao,state.profile.escalao));
-  if(!existsInSheet){el.innerHTML=transportCardHTML({ape:true});return;}
   const myT=state.TRANSPORTS.filter(t=>sameText(t.equipa,state.profile.equipa)&&sameText(t.escalao,state.profile.escalao)&&dayNum(t.dia)===state.activeLogDia);
-  if(!myT.length){el.innerHTML=`<div class="empty"><div class="empty-icon">🚌</div><div class="empty-txt">Nenhum transporte para ${state.profile.equipa}</div></div>`;return;}
+  // Sem linha da equipa/escalão para o dia selecionado (quer porque não
+  // existe de todo na sheet, quer porque só tem linhas noutros dias):
+  // considera-se deslocação a pé nesse dia — não é uma falha de dados, é
+  // o pavilhão ficar junto ao alojamento.
+  if(!myT.length){el.innerHTML=transportCardHTML({ape:true});return;}
   const partidas=myT.filter(t=>t.tipo==='partida');
   const regressos=myT.filter(t=>t.tipo==='regresso');
   let h='';
@@ -92,19 +91,16 @@ export function renderFood() {
     el.innerHTML=`<div class="empty"><div class="empty-icon">🍽</div><div class="empty-txt">Sem informação de alimentação para ${state.profile.equipa}.</div></div>`;
     return;
   }
-  const byDate = {};
-  myFood.forEach(r => { const d = r['Data'] || 'S/d'; if (!byDate[d]) byDate[d]=[]; byDate[d].push(r); });
-  let h = '';
-  Object.entries(byDate).forEach(([data, refs]) => {
-    h += `<div class="sec-head"><div class="sec-title">📅 ${data}</div></div><div class="card"><div>`;
-    refs.forEach(r => {
-      h += `<div class="game-item">
-        <div class="game-time"><div class="game-time-dia">${r['Refeição'] || ''}</div></div>
-        <div class="game-teams"><div class="game-teams-row"><span class="game-team-name">📍 ${r['Local'] || ''}</span></div></div>
-      </div>`;
-    });
-    h += `</div></div>`;
+  // O seletor de dias já filtra myFood a um único dia — não é preciso
+  // repetir a data entre o seletor e os retângulos de refeição.
+  let h = `<div class="card"><div>`;
+  myFood.forEach(r => {
+    h += `<div class="game-item">
+      <div class="game-time"><div class="game-time-dia">${r['Refeição'] || ''}</div></div>
+      <div class="game-teams"><div class="game-teams-row"><span class="game-team-name">📍 ${r['Local'] || ''}</span></div></div>
+    </div>`;
   });
+  h += `</div></div>`;
   el.innerHTML = h;
 }
 

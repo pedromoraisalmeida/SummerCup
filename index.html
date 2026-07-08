@@ -57,10 +57,14 @@
     <div id="ob-step2-treinador" style="display:none">
       <div class="ob-heading">Código de clube</div>
       <div class="ob-desc">Introduz o código atribuído ao teu clube pela organização.</div>
-      <div class="ob-info-box">🔑 O código foi fornecido pela organização.</div>
-      <input class="ob-input" id="ob-treinador-code" type="text" placeholder="Código de clube" autocomplete="off"
-        onkeydown="if(event.key==='Enter'){event.preventDefault();validateTreinadorCode();}">
-      <button class="ob-btn ob-btn-sec" id="ob-treinador-validate-btn" style="margin-top:.5rem" onclick="validateTreinadorCode()">Validar código</button>
+      <div class="ob-info-box" id="ob-treinador-info">🔑 O código foi fornecido pela organização.</div>
+      <div class="ob-input-wrap" id="ob-treinador-code-wrap">
+        <input class="ob-input" id="ob-treinador-code" type="password" placeholder="Código de clube" autocomplete="off"
+          oninput="onTreinadorCodeInput()"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();validateTreinadorCode();}">
+        <span class="ob-eye-toggle" onclick="togglePwVisibility('ob-treinador-code',this)">👁️</span>
+      </div>
+      <button class="ob-btn" id="ob-treinador-validate-btn" disabled onclick="validateTreinadorCode()">Validar código</button>
       <div class="ob-error" id="ob-treinador-error">Código inválido. Verifica e tenta novamente.</div>
       <div id="ob-treinador-equipa" style="display:none;margin-top:1rem">
         <div class="ob-info-box" id="ob-treinador-clube-confirm"></div>
@@ -74,14 +78,20 @@
       <div class="ob-heading">Bem-vindo, árbitro!</div>
       <div class="ob-desc">Introduz o teu código de árbitro para acederes à tua escala pessoal.</div>
       <div class="ob-info-box">🟡 O código foi atribuído pelo organizador do torneio.</div>
-      <input class="ob-input" id="ob-arb-code" type="text" placeholder="Código árbitro (ex: ARB-07)" autocomplete="off">
+      <div class="ob-input-wrap">
+        <input class="ob-input" id="ob-arb-code" type="password" placeholder="Código árbitro (ex: ARB-07)" autocomplete="off">
+        <span class="ob-eye-toggle" onclick="togglePwVisibility('ob-arb-code',this)">👁️</span>
+      </div>
       <div class="ob-error" id="ob-arb-error">Código não encontrado. Verifica e tenta novamente.</div>
     </div>
     <div id="ob-step2-pavilhao" style="display:none">
       <div class="ob-heading">Código do pavilhão</div>
       <div class="ob-desc">Introduz o código do pavilhão que te foi atribuído pelo organizador.</div>
       <div class="ob-info-box">🏟 O código identifica o teu campo e dá acesso ao registo de resultados.</div>
-      <input class="ob-input" id="ob-pav-code" type="text" placeholder="Código (ex: PAV-L4)" autocomplete="off" oninput="onPavCodeChange()">
+      <div class="ob-input-wrap">
+        <input class="ob-input" id="ob-pav-code" type="password" placeholder="Código (ex: PAV-L4)" autocomplete="off" oninput="onPavCodeChange()">
+        <span class="ob-eye-toggle" onclick="togglePwVisibility('ob-pav-code',this)">👁️</span>
+      </div>
       <div class="ob-error" id="ob-pav-error">Código de pavilhão inválido.</div>
     </div>
     <button class="ob-btn" id="ob-btn2" disabled onclick="goStep(3)">Continuar →</button>
@@ -93,7 +103,10 @@
       <div class="ob-heading">Código de acesso</div>
       <div class="ob-desc">Treinadores têm acesso à informação de transportes e alimentação.</div>
       <div class="ob-info-box">🔑 O código será fornecido no início do torneio pela organização.</div>
-      <input class="ob-input" id="ob-key" type="password" placeholder="Código de acesso" autocomplete="off">
+      <div class="ob-input-wrap">
+        <input class="ob-input" id="ob-key" type="password" placeholder="Código de acesso" autocomplete="off">
+        <span class="ob-eye-toggle" onclick="togglePwVisibility('ob-key',this)">👁️</span>
+      </div>
       <div class="ob-error" id="ob-key-error">Código incorreto. Tenta novamente.</div>
     </div>
     <div id="ob-step3-confirm" style="display:none">
@@ -206,7 +219,7 @@
     <h3>O meu perfil</h3>
     <div id="profile-info"></div>
     <div style="display:flex;gap:10px;margin-top:1rem">
-      <button class="ob-btn" style="flex:1;margin-top:0;background:var(--navy);color:var(--yellow)" onclick="resetProfile()">Mudar perfil</button>
+      <button class="ob-btn" id="profile-primary-btn" style="flex:1;margin-top:0;background:var(--navy);color:var(--yellow)" onclick="resetProfile()">Mudar perfil</button>
       <button class="ob-btn ob-btn-sec" style="flex:1;margin-top:0;color:var(--txt2);border-color:var(--border)" onclick="closeProfile(null)">Fechar</button>
     </div>
   </div>

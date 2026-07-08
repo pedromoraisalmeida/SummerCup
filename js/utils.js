@@ -15,8 +15,18 @@ export function campoLabel(campo, withPav = true) {
   if (!withPav) return `📌 ${campo}`;
   const pav = CAMPO_PAVILHAO[campo];
   if (!pav) return `📍 ${campo}`;
+  return `<div class="campo-pav">📍 ${pav}</div><div class="campo-cod">📌 ${campo}</div>`;
+}
+
+// Linha "Localização (Google Maps)" independente, mostrada no fim do
+// retângulo do jogo — só o clique nesta linha abre o Google Maps (o nome
+// do pavilhão em campoLabel() deixou de ser clicável).
+export function localizacaoHTML(campo) {
+  if (!campo) return '';
+  const pav = CAMPO_PAVILHAO[campo];
+  if (!pav) return '';
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pav)}`;
-  return `<div class="campo-pav" onclick="window.open('${mapsUrl}','_blank')">📍 ${pav} (Google Maps)</div><div class="campo-cod">📌 ${campo}</div>`;
+  return `<div class="game-localizacao" onclick="window.open('${mapsUrl}','_blank')">🗺️ Localização (Google Maps)</div>`;
 }
 
 export function dayNum(str) {
@@ -114,6 +124,7 @@ export function gameItemHTML(g, hi) {
       ${done&&sets.length?`<div class="sets-row">${sets.map(s=>`<span class="set-chip ${aprovado?'badge-done':'badge-provisorio'}">${s}</span>`).join('')}</div>`:''}
       <div class="game-campo">${campoLabel(g.campo)}</div>
       <div class="game-escalao">🏐 ${g.escalao} · Série ${g.serie}</div>
+      ${localizacaoHTML(g.campo)}
     </div>
     ${badge}<div class="game-scores">${scoreContent}</div>
   </div>`;

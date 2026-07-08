@@ -36,6 +36,11 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .ob-select option{background:#0E1E3A;color:#fff}
 .ob-input{width:100%;padding:12px 14px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:var(--r-sm);color:var(--white);font-size:16px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;margin-bottom:.75rem;letter-spacing:2px}
 .ob-input:focus{border-color:var(--yellow)}
+.ob-input-wrap{position:relative;display:flex;align-items:center}
+.ob-input-wrap .ob-input{padding-right:44px;margin-bottom:0}
+.ob-input-wrap{margin-bottom:.75rem}
+.ob-eye-toggle{position:absolute;right:14px;display:flex;align-items:center;justify-content:center;height:100%;font-size:18px;line-height:1;cursor:pointer;user-select:none;opacity:.8}
+.ob-eye-toggle:active{opacity:1}
 .ob-input::placeholder{color:rgba(255,255,255,.3);letter-spacing:0}
 .ob-input.error{border-color:#e74c3c;animation:shake .3s}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -162,6 +167,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .campo-pav{cursor:pointer}
 .campo-pav:active{opacity:.6}
 .game-escalao{font-size:10px;color:var(--txt3);margin-top:2px}
+.game-localizacao{font-size:10px;color:var(--txt3);margin-top:2px;cursor:pointer}
+.game-localizacao:active{opacity:.6}
 .sets-row{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
 .set-chip{font-size:10px;border-radius:4px;padding:2px 6px;font-weight:600}
 
