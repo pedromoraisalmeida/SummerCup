@@ -50,13 +50,20 @@ export function rowToGame(r, idx) {
   };
 }
 
+// Nos cruzamentos (fase 2), enquanto a equipa apurada ainda não é
+// conhecida, a sheet usa códigos-placeholder em vez do nome da equipa —
+// "V123"/"D123" (vencedor/derrotado do jogo 123) ou "1ºSQ" (1.º classificado
+// da série Q). Não são equipas reais e não devem aparecer nos dropdowns nem
+// contar para classificações.
+const isPlaceholderCode = (name) => /^[VD]\d+$/.test(name) || /^\d+ºS[A-Z]+$/.test(name);
+
 export function buildTeamsFromGames(games) {
   const t = {};
   games.forEach(g => {
     if (!t[g.escalao]) t[g.escalao] = {};
     if (!t[g.escalao][g.serie]) t[g.escalao][g.serie] = new Set();
-    if (g.eA) t[g.escalao][g.serie].add(g.eA);
-    if (g.eB) t[g.escalao][g.serie].add(g.eB);
+    if (g.eA && !isPlaceholderCode(g.eA)) t[g.escalao][g.serie].add(g.eA);
+    if (g.eB && !isPlaceholderCode(g.eB)) t[g.escalao][g.serie].add(g.eB);
   });
   Object.keys(t).forEach(e => Object.keys(t[e]).forEach(s => { t[e][s] = [...t[e][s]].sort(); }));
   return t;
