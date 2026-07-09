@@ -117,7 +117,7 @@ export function gameItemHTML(g, hi) {
     :`<span class="game-badge badge-provisorio"><div class="badge-top">Resultado</div><div>${src}Provisório</div></span>`;
   const scoreContent=done?`${sA}${sB}`:`<span class="game-badge badge-pending">–</span>`;
   return `<div class="game-item">
-    <div class="game-time"><div class="game-time-dia">${g.dia.replace('/jul.','jul')}</div><div class="game-time-hora">${g.hora}</div><div class="game-time-id">Jogo ${g.id}</div></div>
+    <div class="game-time"><div class="game-time-dia">${g.dia.replace('/jul.','jul')}</div><div class="game-time-hora">${g.hora}</div><div class="game-time-id">Jogo<br>${g.id}</div></div>
     <div class="game-teams">
       <div class="game-teams-row"><div class="game-team-line">${teamLogoIcon(g.eA)}<span class="game-team-name ${hi&&isA?'my-team':''}">${g.eA}</span></div></div>
       <div class="game-teams-row"><div class="game-team-line">${teamLogoIcon(g.eB)}<span class="game-team-name ${hi&&isB?'my-team':''}">${g.eB}</span></div></div>

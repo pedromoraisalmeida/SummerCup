@@ -111,7 +111,14 @@ export function showPage(id, btn) {
 // hydrateChrome(), para nunca chegar a mostrar o Início por breve que seja.
 export function restoreLastPage() {
   const id = sessionStorage.getItem('summercup_last_page');
-  if (!id || id === 'home') return;
+  if (!id || id === 'home') {
+    // Força mesmo o Início em vez de assumir que o DOM já lá está — essa
+    // suposição só é verdadeira num carregamento novo da página. Em
+    // transições sem reload dentro da mesma sessão (ex. "Mudar Equipa"),
+    // a página anterior pode continuar marcada como ativa no DOM.
+    showPage('home', document.querySelector('.nav-btn[onclick*="showPage(\'home\'"]'));
+    return;
+  }
   const page = document.getElementById('page-' + id);
   if (!page) return;
   const btn = id === 'pavilhao'

@@ -5,6 +5,7 @@ import {
   SHEET_ALIM_BASE, SHEET_ALIM_GIDS,
 } from './config.js';
 import { state } from './state.js';
+import { dayNum } from './utils.js';
 
 // ── CSV PARSER ──
 export function parseCSV(text) {
@@ -82,6 +83,13 @@ export function rowsToEquipaAlojamento(rows) {
   return map;
 }
 
+// Minutos desde a meia-noite, a partir de "HH:MM" — usado só para comparar
+// com as 18:00 na regra das "Festas". Devolve null se não for parseável.
+function horaParaMinutos(hora) {
+  const m = String(hora || '').match(/^(\d{1,2}):(\d{2})/);
+  return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : null;
+}
+
 export function rowsToTransports(rows) {
   const map = new Map();
   rows.forEach(r => {
@@ -93,7 +101,7 @@ export function rowsToTransports(rows) {
   const result = [];
   map.forEach(({ escalao, equipa, rows }) => {
     rows.forEach((r, idx) => {
-      const tipo = idx === 0 ? 'partida' : 'regresso';
+      let tipo = idx === 0 ? 'partida' : 'regresso';
       // As duas colunas (Origem/Destino/Hora e Origem2/Destino2/Hora2)
       // interessam sempre, não só quando há transbordo:
       // - as duas preenchidas → transbordo (1.ª coluna = origem do
@@ -117,6 +125,19 @@ export function rowsToTransports(rows) {
       } else {
         ape = true;
       }
+
+      // Exceção só do dia 09/07/2026: percursos que comecem às 18:00 ou
+      // depois e tenham como destino final "Lousã - EB1" são "Festas",
+      // não regressos (nem partidas, se por acaso calhar de ser a 1.ª
+      // linha do dia).
+      if (!ape && dayNum(r['Data']) === 9) {
+        const inicio = horaParaMinutos(legs[0].hora);
+        const destinoFinal = (legs[legs.length - 1].dest || '').trim();
+        if (inicio !== null && inicio >= 18 * 60 && destinoFinal === 'Lousã - EB1') {
+          tipo = 'festas';
+        }
+      }
+
       result.push({ escalao, equipa, tipo, ape, legs, dia: r['Data'] || '' });
     });
   });

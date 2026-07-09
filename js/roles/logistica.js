@@ -15,12 +15,19 @@ export function buildFilterLogDia() {
     ...state.TRANSPORTS.map(t=>dayNum(t.dia)),
     ...state.ALIMENTOS.map(r=>dayNum(r['Data'])),
   ].filter(n=>n!==null))].sort((a,b)=>a-b);
-  if(state.activeLogDia===null||!days.includes(state.activeLogDia)) state.activeLogDia=days[0]??null;
+  if(state.activeLogDia===null||!days.includes(state.activeLogDia)) {
+    // Tal como nos Jogos: por defeito, o dia de hoje, se coincidir com um
+    // dia do torneio; caso contrário, o primeiro dia disponível.
+    const today=new Date().getDate();
+    state.activeLogDia=days.includes(today)?today:(days[0]??null);
+  }
   let h='';
   days.forEach(d=>h+=`<div class="filter-pill ${state.activeLogDia===d?'active':''}" onclick="setLogDia(${d},this)">${String(d).padStart(2,'0')} Jul.</div>`);
   const bar=document.getElementById('filter-log-dia');
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
+  const active=bar.querySelector('.filter-pill.active');
+  if(active) active.scrollIntoView({inline:'center',block:'nearest'});
 }
 
 export function setLogDia(d, el) {
@@ -53,9 +60,15 @@ export function renderTransport() {
   if(!myT.length){el.innerHTML=transportCardHTML({ape:true});return;}
   const partidas=myT.filter(t=>t.tipo==='partida');
   const regressos=myT.filter(t=>t.tipo==='regresso');
+  const festas=myT.filter(t=>t.tipo==='festas');
   let h='';
+  // Se a única linha do dia for uma "Festa" (09/07, depois das 18h, destino
+  // Lousã - EB1), mostra a pé (não há partida/regresso "a sério" nesse dia)
+  // mas mantém também o trajeto da festa em baixo.
+  if(myT.length===1&&festas.length===1)h+=transportCardHTML({ape:true});
   if(partidas.length){h+=`<div style="margin-bottom:8px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--blue-l);color:var(--blue-d);border:1px solid rgba(26,91,166,.2)">🏟 Partidas</span></div>`;partidas.forEach(t=>h+=transportCardHTML(t));}
   if(regressos.length){h+=`<div style="margin-bottom:8px;margin-top:12px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--green-l,#e6f5ee);color:var(--green);border:1px solid rgba(26,122,69,.2)">🏠 Regressos</span></div>`;regressos.forEach(t=>h+=transportCardHTML(t));}
+  if(festas.length){h+=`<div style="margin-bottom:8px;margin-top:12px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--yellow-l,#fdf6d8);color:var(--yellow-d);border:1px solid rgba(245,216,0,.3)">🎉 Festas</span></div>`;festas.forEach(t=>h+=transportCardHTML(t));}
   el.innerHTML=h;
 }
 
