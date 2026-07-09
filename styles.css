@@ -187,11 +187,27 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .class-table tr.my-row td{background:var(--blue-l)}
 .class-table th:not(:nth-child(2)),.class-table td:not(:nth-child(2)){width:1%;white-space:nowrap}
 .class-table th:nth-child(2),.class-table td:nth-child(2){text-align:left}
+.th-frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1.3;font-size:9px;letter-spacing:0;text-transform:none;font-weight:700}
+.th-frac-num{border-bottom:1px solid rgba(255,255,255,.5);padding:0 2px}
+.th-frac-den{padding:0 2px}
 @media (orientation: portrait){.col-sets{display:none}}
 .pos-num{font-family:'Syne',sans-serif;font-size:14px;font-weight:800}
 .pos-1{color:var(--yellow-d)}.pos-2{color:var(--txt2)}.pos-3{color:#8B5E3C}
 .pts-num{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--blue)}
 .class-note{padding:8px 14px;font-size:11px;color:var(--txt2);text-align:center;border-top:1px solid var(--border)}
+
+/* Tabela "Melhores" — letra um pouco menor (mais colunas visíveis de uma vez) */
+.class-table-melhores{font-size:12px}
+.class-table-melhores th{font-size:9px}
+.class-table-melhores .th-frac{font-size:8px}
+.class-table-melhores .pos-num{font-size:13px}
+.class-table-melhores .pts-num{font-size:13px}
+/* Nome da equipa: em vez de cortar com "...", desliza-se com o dedo dentro
+   da própria célula para revelar o resto do nome (sem barra de scroll). */
+.class-team-td-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;scrollbar-width:none}
+.class-team-td-scroll::-webkit-scrollbar{display:none}
+.class-team-td-scroll .class-team-cell{max-width:none}
+.class-team-td-scroll .class-team-name{overflow:visible;text-overflow:clip;white-space:nowrap}
 
 /* TRANSPORT */
 .transport-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:8px}

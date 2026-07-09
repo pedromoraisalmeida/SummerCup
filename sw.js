@@ -10,7 +10,7 @@ const CACHE_NAME = 'summercup-v1';
 // detetar. Por isso, esta versão é incrementada manualmente a cada
 // commit/push, só para forçar o browser a ver sempre um sw.js "diferente"
 // e mostrar o aviso de "nova versão disponível" a quem já tem a app aberta.
-const SW_VERSION = 7;
+const SW_VERSION = 8;
 
 self.addEventListener('install', () => {
   // Não espera pelos separadores antigos fecharem — assume o controlo assim

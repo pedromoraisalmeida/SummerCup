@@ -25,6 +25,7 @@ export function initPullToRefresh() {
   arc.style.strokeDashoffset = `${CIRCUMFERENCE}`;
 
   let startY = 0;
+  let startX = 0;
   let pulling = false;
   let refreshing = false;
   let rawPull = 0;
@@ -55,6 +56,7 @@ export function initPullToRefresh() {
     container.addEventListener('touchstart', (e) => {
       if (refreshing || container.scrollTop > 0) { pulling = false; return; }
       startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
       pulling = true;
     }, { passive: true });
 
@@ -62,6 +64,12 @@ export function initPullToRefresh() {
       if (!pulling || refreshing) return;
       const delta = e.touches[0].clientY - startY;
       if (delta <= 0) return;
+      // Gesto predominantemente horizontal (ex. a deslizar um seletor de
+      // filtros) — não é um "puxar para atualizar". Desiste sem chamar
+      // preventDefault, para não bloquear o scroll horizontal nativo dos
+      // elementos lá dentro (ex. .filter-bar).
+      const deltaX = e.touches[0].clientX - startX;
+      if (Math.abs(deltaX) > delta) { pulling = false; return; }
       e.preventDefault();
       update(delta * 1);
     }, { passive: false });

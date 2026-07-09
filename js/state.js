@@ -14,6 +14,7 @@ export const state = {
   activeLogDia: null,
   classEscalao: '',
   classSerie: '',
+  classMelhorTier: 1,
   currentResultGame: null,
   currentSets: [],
   dataLoaded: false,

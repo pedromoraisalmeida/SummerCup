@@ -75,10 +75,30 @@ export function buildClassFilters() {
 
 export function buildClassSeries() {
   const s=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
-  if(!state.classSerie||!s.includes(state.classSerie)) state.classSerie=s[0]||'';
-  let h='';
+  if(!state.classSerie||(state.classSerie!=='melhores'&&!s.includes(state.classSerie))) state.classSerie=s[0]||'';
+  let h=`<div class="filter-pill ${state.classSerie==='melhores'?'active':''}" onclick="setClassMelhores(this)">MELHORES</div>`;
   s.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerie('${x}',this)">Série ${x}${x===state.profile.serie&&state.classEscalao===state.profile.escalao?' ★':''}</div>`);
   const bar=document.getElementById('filter-class-serie');
+  bar.innerHTML=h;
+  wireFilterBarScroll(bar);
+  const active=bar.querySelector('.filter-pill.active');
+  if(active) active.scrollIntoView({inline:'center',block:'nearest'});
+  if(state.classSerie==='melhores') buildMelhoresTiers(); else document.getElementById('filter-class-melhores').style.display='none';
+}
+
+// Nomes dos níveis "MELHORES" (1.ºs, 2.ºs, ...) — usa por extenso até ao
+// tamanho previsto de uma série; para além disso usa "N.ºs" genérico.
+const TIER_LABELS=['PRIMEIROS','SEGUNDOS','TERCEIROS','QUARTOS','QUINTOS','SEXTOS','SÉTIMOS','OITAVOS','NONOS','DÉCIMOS'];
+const tierLabel=n=>TIER_LABELS[n-1]||`${n}.ºS`;
+
+export function buildMelhoresTiers() {
+  const series=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x));
+  const maxTier=Math.max(0,...series.map(s=>(state.TEAMS[state.classEscalao]?.[s]||[]).length));
+  if(!state.classMelhorTier||state.classMelhorTier>maxTier) state.classMelhorTier=1;
+  let h='';
+  for(let n=1;n<=maxTier;n++) h+=`<div class="filter-pill ${state.classMelhorTier===n?'active':''}" onclick="setClassMelhorTier(${n},this)">${tierLabel(n)}</div>`;
+  const bar=document.getElementById('filter-class-melhores');
+  bar.style.display=maxTier?'flex':'none';
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
   const active=bar.querySelector('.filter-pill.active');
@@ -91,7 +111,7 @@ export function buildClassSeries() {
 // fica correto mas não centrado. Chamar isto de novo quando a página
 // "class" se torna visível corrige isso.
 export function scrollClassFiltersIntoView() {
-  ['filter-class-escalao', 'filter-class-serie'].forEach(id => {
+  ['filter-class-escalao', 'filter-class-serie', 'filter-class-melhores'].forEach(id => {
     const bar = document.getElementById(id);
     const active = bar && bar.querySelector('.filter-pill.active');
     if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
@@ -102,7 +122,8 @@ export function setClassEscalao(e, el) {
   state.classEscalao=e; state.classSerie='';
   document.querySelectorAll('#filter-class-escalao .filter-pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
-  el.scrollIntoView({inline:'center',block:'nearest'});
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  document.getElementById('filter-class-melhores').style.display='none';
   buildClassSeries(); renderClass();
 }
 
@@ -110,14 +131,39 @@ export function setClassSerie(s, el) {
   state.classSerie=s;
   document.querySelectorAll('#filter-class-serie .filter-pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
-  el.scrollIntoView({inline:'center',block:'nearest'});
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  document.getElementById('filter-class-melhores').style.display='none';
   renderClass();
 }
 
-export function renderClass() {
-  if(!state.classEscalao||!state.classSerie){document.getElementById('class-content').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Seleciona escalão e série</div></div>`;return;}
-  const gms=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie&&g.rA!==null&&g.rA!==undefined&&isAprovado(g));
-  const teams=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie).flatMap(g=>[g.eA,g.eB]))];
+export function setClassMelhores(el) {
+  state.classSerie='melhores';
+  state.classMelhorTier=1; // sempre "PRIMEIROS" ao (re)selecionar MELHORES
+  document.querySelectorAll('#filter-class-serie .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  buildMelhoresTiers();
+  renderClass();
+}
+
+export function setClassMelhorTier(n, el) {
+  state.classMelhorTier=n;
+  document.querySelectorAll('#filter-class-melhores .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  renderClass();
+}
+
+export const ratio=(a,b,dec=2)=>b===0?(a>0?'∞':(0).toFixed(dec)):(a/b).toFixed(dec);
+const q=(f,c)=>c===0?(f>0?Infinity:0):f/c;
+
+// Calcula a tabela classificativa de um escalão+série a partir dos jogos
+// que passem em gameFilter (ex. só 1.ª fase) — reutilizado tanto pela
+// classificação normal (todos os jogos) como pelos "MELHORES" (só 1.ª fase).
+// Devolve um array ordenado de [equipa, estatisticas].
+export function computeSerieStandings(escalao, serie, gameFilter) {
+  const gms=state.currentGames.filter(g=>g.escalao===escalao&&g.serie===serie&&g.rA!==null&&g.rA!==undefined&&isAprovado(g)&&gameFilter(g));
+  const teams=[...new Set(state.currentGames.filter(g=>g.escalao===escalao&&g.serie===serie).flatMap(g=>[g.eA,g.eB]))];
   const st={};
   teams.forEach(t=>st[t]={j:0,v:0,d:0,sf:0,sc:0,pf:0,pa:0,fc:0,pts:0});
   const setKeysA=['s1A','s2A','s3A','s4A','s5A'], setKeysB=['s1B','s2B','s3B','s4B','s5B'];
@@ -164,12 +210,10 @@ export function renderClass() {
     return p1-p2;
   }
 
-  const ratio=(a,b)=>b===0?(a>0?'∞':'0.00'):(a/b).toFixed(2);
   // Desempate (regulamento FPV): 1) pontos de classificação; 2) quociente
   // sets ganhos/perdidos; 3) quociente pontos ganhos/perdidos nos sets;
   // 4) confronto direto entre as equipas empatadas.
-  const q=(f,c)=>c===0?(f>0?Infinity:0):f/c;
-  const sorted=Object.entries(st).sort((a,b)=>{
+  return Object.entries(st).sort((a,b)=>{
     const[t1,x]=a,[t2,y]=b;
     if(y.pts!==x.pts) return y.pts-x.pts;
     const qsx=q(x.sf,x.sc), qsy=q(y.sf,y.sc);
@@ -178,15 +222,36 @@ export function renderClass() {
     if(qpy!==qpx) return qpy-qpx;
     return h2hPts(t2,t1);
   });
-  const pc=i=>i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'';
-  const pi=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+}
+
+// Cabeçalho em forma de fração (numerador em cima, denominador em baixo,
+// separados por um traço) — usado nas colunas de rácio/média das tabelas.
+function fracTh(num, den, cls = 'col-sets') {
+  return `<th class="${cls}"><span class="th-frac"><span class="th-frac-num">${num}</span><span class="th-frac-den">${den}</span></span></th>`;
+}
+
+// hideVD: usado só pelos "Melhores" — em portrait, esconde V/D/Pts (que na
+// classificação normal ficam sempre visíveis) para dar lugar às 3 médias.
+function classTableHeadHTML(extraCols, includeFC, hideVD) {
+  const fcCol = includeFC===false ? '' : '<th class="col-sets">FC</th>';
+  const vdCls = hideVD ? ' class="col-sets"' : '';
+  return `<tr><th>#</th><th>Equipa</th><th>J</th><th${vdCls}>V</th><th${vdCls}>D</th><th class="col-sets">S+</th><th class="col-sets">S-</th>${fracTh('S+','S-')}<th class="col-sets">P+</th><th class="col-sets">P-</th>${fracTh('P+','P-')}${fcCol}<th${vdCls}>Pts</th>${extraCols||''}</tr>`;
+}
+const pc=i=>i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'';
+const pi=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+
+export function renderClass() {
+  if(!state.classEscalao||!state.classSerie){document.getElementById('class-content').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Seleciona escalão e série</div></div>`;return;}
+  if(state.classSerie==='melhores'){renderMelhores();return;}
+
+  const sorted=computeSerieStandings(state.classEscalao,state.classSerie,()=>true);
   let h=`<div class="card"><div class="card-header"><div class="card-title">${state.classEscalao} · Série ${state.classSerie}</div></div>
-    <table class="class-table"><thead><tr><th>#</th><th>Equipa</th><th>J</th><th>V</th><th>D</th><th class="col-sets">S+</th><th class="col-sets">S-</th><th class="col-sets">Rácio</th><th class="col-sets">P+</th><th class="col-sets">P-</th><th class="col-sets">Rácio</th><th class="col-sets">FC</th><th>Pts</th></tr></thead><tbody>`;
+    <table class="class-table"><thead>${classTableHeadHTML()}</thead><tbody>`;
   sorted.forEach(([t,s],i)=>{
     const me=t===state.profile.equipa;
     h+=`<tr class="${me?'my-row':''}"><td><span class="pos-num ${pc(i)}">${pi(i)||i+1}</span></td>
       <td style="font-size:12px;font-weight:${me?700:400};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span class="class-team-cell">${teamLogoIcon(t)}<span class="class-team-name">${t}</span></span></td>
-      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa)}</td><td class="col-sets">${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
+      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa,3)}</td><td class="col-sets">${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
   });
   h+=`</tbody></table><div class="class-note">Apenas os jogos com resultados oficiais são contabilizados</div></div>`;
   const sg=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie).sort((a,b)=>a.id-b.id);
@@ -196,8 +261,56 @@ export function renderClass() {
   document.getElementById('class-content').innerHTML=h;
 }
 
+// Jogos da 1.ª fase: dias 08/07 e 09/07 — os "MELHORES" comparam-se sempre
+// só com esta fase, mesmo que já haja jogos da 2.ª fase disputados.
+const isFase1=g=>{const d=dayNum(g.dia);return d===8||d===9;};
+
+export function renderMelhores() {
+  const tier=state.classMelhorTier||1;
+  const series=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
+
+  const entries=[];
+  series.forEach(serie=>{
+    const standings=computeSerieStandings(state.classEscalao,serie,isFase1);
+    const entry=standings[tier-1];
+    if(!entry) return;
+    const [team,s]=entry;
+    if(!s.j) return; // sem jogos da 1.ª fase disputados — não entra na comparação
+    entries.push({
+      team, serie, s,
+      mp: s.pts/s.j,
+      mrs: q(s.sf,s.sc)/s.j,
+      mrp: q(s.pf,s.pa)/s.j,
+    });
+  });
+
+  entries.sort((a,b)=>{
+    if(b.mp!==a.mp) return b.mp-a.mp;
+    if(b.mrs!==a.mrs) return b.mrs-a.mrs;
+    return b.mrp-a.mrp;
+  });
+
+  const fmt=(n,dec=2)=>n===Infinity?'∞':n.toFixed(dec);
+  let h=`<div class="card"><div class="card-header"><div class="card-title">${state.classEscalao} · Melhores — ${tierLabel(tier)}</div></div>
+    <table class="class-table class-table-melhores"><thead>${classTableHeadHTML(`<th class="col-sets">Série</th>${fracTh('Pts','J','')}${fracTh('S+/S-','J','')}${fracTh('P+/P-','J','')}`,false,true)}</thead><tbody>`;
+  if(!entries.length) {
+    h+=`<tr><td colspan="16" style="text-align:center;color:var(--txt3);padding:1.5rem 0">Sem dados da 1.ª fase para este nível.</td></tr>`;
+  }
+  entries.forEach(({team,serie,s,mp,mrs,mrp},i)=>{
+    const me=team===state.profile.equipa;
+    h+=`<tr class="${me?'my-row':''}"><td><span class="pos-num ${pc(i)}">${pi(i)||i+1}</span></td>
+      <td class="class-team-td-scroll" style="font-size:11px;font-weight:${me?700:400};max-width:120px"><span class="class-team-cell">${teamLogoIcon(team)}<span class="class-team-name">${team}</span></span></td>
+      <td>${s.j}</td><td class="col-sets">${s.v}</td><td class="col-sets">${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa,3)}</td><td class="col-sets"><span class="pts-num">${s.pts}</span></td>
+      <td class="col-sets">${serie}</td><td>${fmt(mp)}</td><td>${fmt(mrs)}</td><td>${fmt(mrp,3)}</td></tr>`;
+  });
+  h+=`</tbody></table><div class="class-note">1.ª fase (08/07 e 09/07) · só jogos com resultados oficiais são contabilizados</div></div>`;
+  document.getElementById('class-content').innerHTML=h;
+}
+
 // ── WINDOW REGISTRATIONS ──
 window.setEscalao = setEscalao;
 window.setDia = setDia;
 window.setClassEscalao = setClassEscalao;
 window.setClassSerie = setClassSerie;
+window.setClassMelhores = setClassMelhores;
+window.setClassMelhorTier = setClassMelhorTier;
