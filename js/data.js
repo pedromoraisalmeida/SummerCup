@@ -97,6 +97,10 @@ function horaParaMinutos(hora) {
   return m ? parseInt(m[1]) * 60 + parseInt(m[2]) : null;
 }
 
+// Dia do mês (ver dayNum) → destino final que marca um percurso como
+// "Festas" nesse dia, em vez de "regresso" normal.
+const FESTAS_DESTINO_POR_DIA = { 9: 'Lousã - EB1', 11: 'Lousã - Par. Exposições' };
+
 export function rowsToTransports(rows) {
   const map = new Map();
   rows.forEach(r => {
@@ -133,14 +137,15 @@ export function rowsToTransports(rows) {
         ape = true;
       }
 
-      // Exceção só do dia 09/07/2026: percursos que comecem às 18:00 ou
-      // depois e tenham como destino final "Lousã - EB1" são "Festas",
-      // não regressos (nem partidas, se por acaso calhar de ser a 1.ª
-      // linha do dia).
-      if (!ape && dayNum(r['Data']) === 9) {
+      // Exceção dos dias de "Festas": percursos que comecem às 18:00 ou
+      // depois e tenham como destino final o local da festa desse dia são
+      // "Festas", não regressos (nem partidas, se por acaso calhar de ser a
+      // 1.ª linha do dia). O destino-alvo muda consoante o dia.
+      const destinoFesta = FESTAS_DESTINO_POR_DIA[dayNum(r['Data'])];
+      if (!ape && destinoFesta) {
         const inicio = horaParaMinutos(legs[0].hora);
         const destinoFinal = (legs[legs.length - 1].dest || '').trim();
-        if (inicio !== null && inicio >= 18 * 60 && destinoFinal === 'Lousã - EB1') {
+        if (inicio !== null && inicio >= 18 * 60 && destinoFinal === destinoFesta) {
           tipo = 'festas';
         }
       }

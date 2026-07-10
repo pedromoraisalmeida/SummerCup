@@ -62,9 +62,10 @@ export function renderTransport() {
   const regressos=myT.filter(t=>t.tipo==='regresso');
   const festas=myT.filter(t=>t.tipo==='festas');
   let h='';
-  // Se a única linha do dia for uma "Festa" (09/07, depois das 18h, destino
-  // Lousã - EB1), mostra a pé (não há partida/regresso "a sério" nesse dia)
-  // mas mantém também o trajeto da festa em baixo.
+  // Se a única linha do dia for uma "Festa" (09/07 ou 11/07, depois das
+  // 18h — ver FESTAS_DESTINO_POR_DIA em data.js), mostra a pé (não há
+  // partida/regresso "a sério" nesse dia) mas mantém também o trajeto da
+  // festa em baixo.
   if(myT.length===1&&festas.length===1)h+=transportCardHTML({ape:true});
   if(partidas.length){h+=`<div style="margin-bottom:8px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--blue-l);color:var(--blue-d);border:1px solid rgba(26,91,166,.2)">🏟 Partidas</span></div>`;partidas.forEach(t=>h+=transportCardHTML(t));}
   if(regressos.length){h+=`<div style="margin-bottom:8px;margin-top:12px"><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:4px 12px;border-radius:99px;background:var(--green-l,#e6f5ee);color:var(--green);border:1px solid rgba(26,122,69,.2)">🏠 Regressos</span></div>`;regressos.forEach(t=>h+=transportCardHTML(t));}
