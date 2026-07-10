@@ -60,9 +60,39 @@ export function renderJogos() {
   document.getElementById('jogos-list').innerHTML=h;
 }
 
+// Jogos de uma fase, conforme o valor de state.classFase ('1', '2' ou
+// 'final'): fase 1/2 vêm marcados em g.fase (1 ou 2, ver data.js); "final"
+// são os cruzamentos (Série no formato "N.º/M.º" ou "Final").
+export function gamesOfClassFase(escalao) {
+  const fase=state.classFase||'2';
+  return state.currentGames.filter(g=>g.escalao===escalao&&(fase==='final'?g.fase==='final':g.fase===Number(fase)));
+}
+
+const FASE_LABELS={1:'1.ª Fase',2:'2.ª Fase',final:'Fase Final'};
+
+export function buildFilterClassFase() {
+  if(!state.classFase) state.classFase='2';
+  let h='';
+  ['1','2','final'].forEach(f=>h+=`<div class="filter-pill ${state.classFase===f?'active':''}" onclick="setClassFase('${f}',this)">${FASE_LABELS[f]}</div>`);
+  const bar=document.getElementById('filter-class-fase');
+  bar.innerHTML=h;
+  wireFilterBarScroll(bar);
+  const active=bar.querySelector('.filter-pill.active');
+  if(active) active.scrollIntoView({inline:'center',block:'nearest'});
+}
+
+export function setClassFase(f, el) {
+  state.classFase=f; state.classEscalao=''; state.classSerie=''; state.classFinalSub='todos';
+  document.querySelectorAll('#filter-class-fase .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  buildClassFilters();
+}
+
 export function buildClassFilters() {
-  const esc=[...new Set(state.currentGames.map(g=>g.escalao))].sort();
-  if(!state.classEscalao) state.classEscalao=esc[0];
+  if(!state.classFase) state.classFase='2';
+  const esc=[...new Set(state.currentGames.filter(g=>state.classFase==='final'?g.fase==='final':g.fase===Number(state.classFase)).map(g=>g.escalao))].sort();
+  if(!state.classEscalao||!esc.includes(state.classEscalao)) state.classEscalao=(state.profile.escalao&&esc.includes(state.profile.escalao))?state.profile.escalao:(esc[0]||'');
   let h='';
   esc.forEach(e=>h+=`<div class="filter-pill ${e===state.classEscalao?'active':''}" onclick="setClassEscalao('${e}',this)">${e}${e===state.profile.escalao?' ★':''}</div>`);
   const bar=document.getElementById('filter-class-escalao');
@@ -73,17 +103,142 @@ export function buildClassFilters() {
   buildClassSeries();
 }
 
+// A equipa do utilizador pode estar em séries com a mesma letra em fases
+// diferentes (ex. "J" na 1.ª fase e "K" na 2.ª) — por isso a estrela não
+// pode depender de um único "profile.serie" fixo, tem de verificar, para a
+// fase atualmente selecionada, se a equipa joga mesmo nessa série.
+function isMySerie(escalao, serie) {
+  if(!state.profile.equipa) return false;
+  const fase=state.classFase==='final'?'final':Number(state.classFase);
+  return state.currentGames.some(g=>g.escalao===escalao&&g.serie===serie&&g.fase===fase&&(g.eA===state.profile.equipa||g.eB===state.profile.equipa));
+}
+
+// Encontra, de entre uma lista de séries candidatas, aquela em que a equipa
+// do utilizador joga na fase atual — usado para pré-selecionar a série da
+// equipa preferida sempre que se muda de fase.
+function findMySerie(escalao, seriesList) {
+  if(!state.profile.equipa) return null;
+  const fase=state.classFase==='final'?'final':Number(state.classFase);
+  const g=state.currentGames.find(g=>g.escalao===escalao&&seriesList.includes(g.serie)&&g.fase===fase&&(g.eA===state.profile.equipa||g.eB===state.profile.equipa));
+  return g?g.serie:null;
+}
+
+// Ordem das eliminatórias da Fase Final: "Final" primeiro, depois por ordem
+// crescente do primeiro número (3º/4º antes de 5º/6º, etc.).
+function bracketOrder(label) {
+  if(/^final$/i.test(label)) return -1;
+  const m=label.match(/^(\d+)/);
+  return m?parseInt(m[1]):9999;
+}
+
+// Intervalo de colocações de uma eliminatória (ex. "5º/8º" → [5,8]; "Final"
+// → [1,2]). null se o formato não for reconhecido.
+function bracketRange(label) {
+  if(/^final$/i.test(label)) return [1,2];
+  const m=label.match(/^(\d+)º\/(\d+)º$/);
+  return m ? [parseInt(m[1]), parseInt(m[2])] : null;
+}
+
+function finalBracketLabels(escalao) {
+  return [...new Set(state.currentGames.filter(g=>g.escalao===escalao&&g.fase==='final').map(g=>g.serie))];
+}
+
+// Eliminatórias "filhas" de um grupo (ex. "5º/8º" → ["5º/6º","7º/8º"]) —
+// aquelas cujo intervalo está contido no intervalo de "label".
+function bracketChildren(labels, label) {
+  const a=bracketRange(label);
+  if(!a) return [];
+  return labels.filter(o=>{
+    if(o===label) return false;
+    const b=bracketRange(o);
+    return b && a[0]<=b[0] && b[1]<=a[1];
+  });
+}
+
+// Só aparecem no seletor de topo as eliminatórias que não estão contidas
+// noutra eliminatória existente (ex. "5º/6º" e "7º/8º" ficam escondidas
+// atrás de "5º/8º"; só aparece "5º/8º").
+function bracketTopLevel(labels) {
+  return labels.filter(l=>{
+    const b=bracketRange(l);
+    if(!b) return true;
+    return !labels.some(o=>{
+      if(o===l) return false;
+      const a=bracketRange(o);
+      return a && a[0]<=b[0] && b[1]<=a[1];
+    });
+  });
+}
+
 export function buildClassSeries() {
-  const s=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
-  if(!state.classSerie||(state.classSerie!=='melhores'&&!s.includes(state.classSerie))) state.classSerie=s[0]||'';
-  let h=`<div class="filter-pill ${state.classSerie==='melhores'?'active':''}" onclick="setClassMelhores(this)">MELHORES</div>`;
-  s.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerie('${x}',this)">Série ${x}${x===state.profile.serie&&state.classEscalao===state.profile.escalao?' ★':''}</div>`);
+  const games=gamesOfClassFase(state.classEscalao);
   const bar=document.getElementById('filter-class-serie');
+
+  if(state.classFase==='final') {
+    const labels=finalBracketLabels(state.classEscalao);
+    const top=bracketTopLevel(labels).sort((a,b)=>bracketOrder(a)-bracketOrder(b));
+    if(!top.includes(state.classSerie)) state.classSerie=top[0]||'';
+    let h='';
+    top.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerieFinal('${x}',this)">${x}${isMySerie(state.classEscalao,x)?' ★':''}</div>`);
+    bar.innerHTML=h;
+    wireFilterBarScroll(bar);
+    const active=bar.querySelector('.filter-pill.active');
+    if(active) active.scrollIntoView({inline:'center',block:'nearest'});
+    buildClassFinalSub();
+    return;
+  }
+
+  const s=[...new Set(games.map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
+  if(!state.classSerie||(state.classSerie!=='melhores'&&!s.includes(state.classSerie))) state.classSerie=findMySerie(state.classEscalao,s)||s[0]||'';
+  let h=state.classFase==='1'?`<div class="filter-pill ${state.classSerie==='melhores'?'active':''}" onclick="setClassMelhores(this)">MELHORES</div>`:'';
+  s.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerie('${x}',this)">Série ${x}${isMySerie(state.classEscalao,x)?' ★':''}</div>`);
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
   const active=bar.querySelector('.filter-pill.active');
   if(active) active.scrollIntoView({inline:'center',block:'nearest'});
-  if(state.classSerie==='melhores') buildMelhoresTiers(); else document.getElementById('filter-class-melhores').style.display='none';
+  if(state.classFase==='1'&&state.classSerie==='melhores') buildMelhoresTiers(); else document.getElementById('filter-class-melhores').style.display='none';
+  renderClass();
+}
+
+// Reutiliza a barra "#filter-class-melhores" (só usada por MELHORES na 1.ª
+// fase) como 2.º nível de seleção da Fase Final, para as eliminatórias
+// agrupadas (ex. "5º/8º" → "Todos" / "5º/6º" / "7º/8º").
+export function buildClassFinalSub() {
+  const labels=finalBracketLabels(state.classEscalao);
+  const children=bracketChildren(labels, state.classSerie).sort((a,b)=>bracketOrder(a)-bracketOrder(b));
+  const bar=document.getElementById('filter-class-melhores');
+  if(!children.length) {
+    bar.style.display='none';
+    bar.innerHTML='';
+    renderClass();
+    return;
+  }
+  if(!state.classFinalSub||!['todos',...children].includes(state.classFinalSub)) state.classFinalSub='todos';
+  let h=`<div class="filter-pill ${state.classFinalSub==='todos'?'active':''}" onclick="setClassFinalSub('todos',this)">Todos</div>`;
+  children.forEach(c=>h+=`<div class="filter-pill ${c===state.classFinalSub?'active':''}" onclick="setClassFinalSub('${c}',this)">${c}${isMySerie(state.classEscalao,c)?' ★':''}</div>`);
+  bar.style.display='flex';
+  bar.innerHTML=h;
+  wireFilterBarScroll(bar);
+  const active=bar.querySelector('.filter-pill.active');
+  if(active) active.scrollIntoView({inline:'center',block:'nearest'});
+  renderClass();
+}
+
+export function setClassSerieFinal(label, el) {
+  state.classSerie=label;
+  state.classFinalSub='todos';
+  document.querySelectorAll('#filter-class-serie .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  buildClassFinalSub();
+}
+
+export function setClassFinalSub(sub, el) {
+  state.classFinalSub=sub;
+  document.querySelectorAll('#filter-class-melhores .filter-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  el.scrollIntoView({inline:'nearest',block:'nearest'});
+  renderClass();
 }
 
 // Nomes dos níveis "MELHORES" (1.ºs, 2.ºs, ...) — usa por extenso até ao
@@ -92,8 +247,9 @@ const TIER_LABELS=['PRIMEIROS','SEGUNDOS','TERCEIROS','QUARTOS','QUINTOS','SEXTO
 const tierLabel=n=>TIER_LABELS[n-1]||`${n}.ºS`;
 
 export function buildMelhoresTiers() {
-  const series=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x));
-  const maxTier=Math.max(0,...series.map(s=>(state.TEAMS[state.classEscalao]?.[s]||[]).length));
+  const gamesFase1=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.fase===1);
+  const series=[...new Set(gamesFase1.map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x));
+  const maxTier=Math.max(0,...series.map(s=>new Set(gamesFase1.filter(g=>g.serie===s).flatMap(g=>[g.eA,g.eB])).size));
   if(!state.classMelhorTier||state.classMelhorTier>maxTier) state.classMelhorTier=1;
   let h='';
   for(let n=1;n<=maxTier;n++) h+=`<div class="filter-pill ${state.classMelhorTier===n?'active':''}" onclick="setClassMelhorTier(${n},this)">${tierLabel(n)}</div>`;
@@ -111,7 +267,7 @@ export function buildMelhoresTiers() {
 // fica correto mas não centrado. Chamar isto de novo quando a página
 // "class" se torna visível corrige isso.
 export function scrollClassFiltersIntoView() {
-  ['filter-class-escalao', 'filter-class-serie', 'filter-class-melhores'].forEach(id => {
+  ['filter-class-fase', 'filter-class-escalao', 'filter-class-serie', 'filter-class-melhores'].forEach(id => {
     const bar = document.getElementById(id);
     const active = bar && bar.querySelector('.filter-pill.active');
     if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
@@ -124,7 +280,7 @@ export function setClassEscalao(e, el) {
   el.classList.add('active');
   el.scrollIntoView({inline:'nearest',block:'nearest'});
   document.getElementById('filter-class-melhores').style.display='none';
-  buildClassSeries(); renderClass();
+  buildClassSeries();
 }
 
 export function setClassSerie(s, el) {
@@ -163,7 +319,10 @@ const q=(f,c)=>c===0?(f>0?Infinity:0):f/c;
 // Devolve um array ordenado de [equipa, estatisticas].
 export function computeSerieStandings(escalao, serie, gameFilter) {
   const gms=state.currentGames.filter(g=>g.escalao===escalao&&g.serie===serie&&g.rA!==null&&g.rA!==undefined&&isAprovado(g)&&gameFilter(g));
-  const teams=[...new Set(state.currentGames.filter(g=>g.escalao===escalao&&g.serie===serie).flatMap(g=>[g.eA,g.eB]))];
+  // A lista de equipas também respeita gameFilter (não só gms): garante que
+  // séries com a mesma letra em fases diferentes (ex. "J" na 1.ª e na 2.ª
+  // fase) não se misturam, mas mantém equipas que ainda não jogaram (0 J).
+  const teams=[...new Set(state.currentGames.filter(g=>g.escalao===escalao&&g.serie===serie&&gameFilter(g)).flatMap(g=>[g.eA,g.eB]))];
   const st={};
   teams.forEach(t=>st[t]={j:0,v:0,d:0,sf:0,sc:0,pf:0,pa:0,fc:0,pts:0});
   const setKeysA=['s1A','s2A','s3A','s4A','s5A'], setKeysB=['s1B','s2B','s3B','s4B','s5B'];
@@ -242,9 +401,11 @@ const pi=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
 
 export function renderClass() {
   if(!state.classEscalao||!state.classSerie){document.getElementById('class-content').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Seleciona escalão e série</div></div>`;return;}
+  if(state.classFase==='final'){renderFinalBracket();return;}
   if(state.classSerie==='melhores'){renderMelhores();return;}
 
-  const sorted=computeSerieStandings(state.classEscalao,state.classSerie,()=>true);
+  const faseFilter=g=>g.fase===Number(state.classFase);
+  const sorted=computeSerieStandings(state.classEscalao,state.classSerie,faseFilter);
   let h=`<div class="card"><div class="card-header"><div class="card-title">${state.classEscalao} · Série ${state.classSerie}</div></div>
     <table class="class-table"><thead>${classTableHeadHTML()}</thead><tbody>`;
   sorted.forEach(([t,s],i)=>{
@@ -254,9 +415,34 @@ export function renderClass() {
       <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa,3)}</td><td class="col-sets">${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
   });
   h+=`</tbody></table><div class="class-note">Apenas os jogos com resultados oficiais são contabilizados</div></div>`;
-  const sg=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie).sort((a,b)=>a.id-b.id);
+  const sg=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie&&faseFilter(g)).sort((a,b)=>a.id-b.id);
   h+=`<div class="sec-head" style="margin-top:12px"><div class="sec-title">Jogos da série ${state.classSerie}</div></div><div class="card"><div>`;
   sg.forEach(g=>h+=gameItemHTML(g,true));
+  h+=`</div></div>`;
+  document.getElementById('class-content').innerHTML=h;
+}
+
+export function renderFinalBracket() {
+  const escalao=state.classEscalao, label=state.classSerie;
+  const labels=finalBracketLabels(escalao);
+  const children=bracketChildren(labels, label);
+  let activeLabels, title;
+  if(children.length && state.classFinalSub && state.classFinalSub!=='todos') {
+    activeLabels=[state.classFinalSub];
+    title=state.classFinalSub;
+  } else if(children.length) {
+    activeLabels=[label, ...children];
+    title=`${label} · Todos`;
+  } else {
+    activeLabels=[label];
+    title=label;
+  }
+  const games=state.currentGames.filter(g=>g.escalao===escalao&&g.fase==='final'&&activeLabels.includes(g.serie)).sort((a,b)=>a.id-b.id);
+  let h=`<div class="sec-head"><div class="sec-title">${escalao} · Fase Final — ${title}</div></div><div class="card"><div>`;
+  if(!games.length){
+    h+=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Sem jogos</div></div>`;
+  }
+  games.forEach(g=>h+=gameItemHTML(g,true));
   h+=`</div></div>`;
   document.getElementById('class-content').innerHTML=h;
 }
@@ -267,7 +453,7 @@ const isFase1=g=>{const d=dayNum(g.dia);return d===8||d===9;};
 
 export function renderMelhores() {
   const tier=state.classMelhorTier||1;
-  const series=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
+  const series=[...new Set(state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.fase===1).map(g=>g.serie))].filter(x=>/^[A-Za-z]$/.test(x)).sort();
 
   const entries=[];
   series.forEach(serie=>{
@@ -310,7 +496,10 @@ export function renderMelhores() {
 // ── WINDOW REGISTRATIONS ──
 window.setEscalao = setEscalao;
 window.setDia = setDia;
+window.setClassFase = setClassFase;
 window.setClassEscalao = setClassEscalao;
 window.setClassSerie = setClassSerie;
+window.setClassSerieFinal = setClassSerieFinal;
+window.setClassFinalSub = setClassFinalSub;
 window.setClassMelhores = setClassMelhores;
 window.setClassMelhorTier = setClassMelhorTier;

@@ -123,7 +123,7 @@ export function gameItemHTML(g, hi) {
       <div class="game-teams-row"><div class="game-team-line">${teamLogoIcon(g.eB)}<span class="game-team-name ${hi&&isB?'my-team':''}">${g.eB}</span></div></div>
       ${done&&sets.length?`<div class="sets-row">${sets.map(s=>`<span class="set-chip ${aprovado?'badge-done':'badge-provisorio'}">${s}</span>`).join('')}</div>`:''}
       <div class="game-campo">${campoLabel(g.campo)}</div>
-      <div class="game-escalao">🏐 ${g.escalao} · Série ${g.serie}</div>
+      <div class="game-escalao">🏐 ${g.escalao} · ${/^[A-Za-z]$/.test(g.serie) ? `Série ${g.serie}` : g.serie}</div>
       ${localizacaoHTML(g.campo)}
     </div>
     ${badge}<div class="game-scores">${scoreContent}</div>

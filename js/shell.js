@@ -55,6 +55,7 @@ export function initApp() {
   ]).then(([shared, jogador, arbitro, pavilhao, logistica]) => {
     shared.buildFilterEscalao();
     shared.buildFilterDia();
+    shared.buildFilterClassFase();
     shared.buildClassFilters();
     jogador.renderHome();
     shared.renderJogos();

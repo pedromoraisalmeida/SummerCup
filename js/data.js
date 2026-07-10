@@ -50,12 +50,12 @@ export function rowToGame(r, idx) {
   };
 }
 
-// Nos cruzamentos (fase 2), enquanto a equipa apurada ainda não é
+// Nos cruzamentos da Fase Final, enquanto a equipa apurada ainda não é
 // conhecida, a sheet usa códigos-placeholder em vez do nome da equipa —
 // "V123"/"D123" (vencedor/derrotado do jogo 123) ou "1ºSQ" (1.º classificado
 // da série Q). Não são equipas reais e não devem aparecer nos dropdowns nem
 // contar para classificações.
-const isPlaceholderCode = (name) => /^[VD]\d+$/.test(name) || /^\d+ºS[A-Z]+$/.test(name);
+export const isPlaceholderCode = (name) => /^[VD]\d+$/.test(name) || /^\d+ºS[A-Z]+$/.test(name);
 
 export function buildTeamsFromGames(games) {
   const t = {};
@@ -176,8 +176,16 @@ export async function loadAllData() {
     ]);
     const transTexts = rest.slice(0, SHEET_TRANS_GIDS.length);
     const alimTexts  = rest.slice(SHEET_TRANS_GIDS.length);
-    const g1 = parseCSV(r1).map((r, i) => rowToGame(r, i));
-    const g2 = parseCSV(r2).map((r, i) => rowToGame(r, g1.length + i));
+    // Fase 1 = folha "Fase1" (dias 08/07 e 09/07). Na folha "Fase2" há dois
+    // tipos de jogo, distinguidos pela coluna "Série": uma letra (A, B, C...)
+    // é 2.ª fase (mesmo formato de série da 1.ª fase, mas independente); um
+    // formato "N.º/M.º" (ou "Final") é a Fase Final (cruzamentos eliminatórios).
+    const g1 = parseCSV(r1).map((r, i) => ({ ...rowToGame(r, i), fase: 1 }));
+    const g2 = parseCSV(r2).map((r, i) => {
+      const g = rowToGame(r, g1.length + i);
+      g.fase = /^[A-Za-z]$/.test(g.serie) ? 2 : 'final';
+      return g;
+    });
     state.GAMES_BASE = [...g1, ...g2].filter(g => g.eA && g.eB);
     state.TEAMS = buildTeamsFromGames(state.GAMES_BASE);
     const equipasRows = parseCSV(rEquipas);
