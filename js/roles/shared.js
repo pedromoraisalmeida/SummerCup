@@ -18,7 +18,11 @@ export function buildFilterEscalao() {
 }
 
 export function buildFilterDia() {
-  const dias = [...new Set(state.currentGames.map(g => g.dia))].sort();
+  // .filter(Boolean): um jogo sem "Dia" preenchido na sheet (célula vazia ou
+  // cabeçalho da coluna corrompido) não pode gerar um pill vazio/quebrado —
+  // é simplesmente ignorado no seletor de dias, em vez de rebentar o ecrã
+  // inteiro no .replace() mais abaixo.
+  const dias = [...new Set(state.currentGames.map(g => g.dia).filter(Boolean))].sort();
   // Por defeito, seleciona o dia de hoje se coincidir com um dia do
   // torneio (só na primeira construção do filtro — não força o dia atual
   // se o utilizador já tiver escolhido outro).
