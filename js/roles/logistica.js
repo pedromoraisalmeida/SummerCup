@@ -16,10 +16,10 @@ export function buildFilterLogDia() {
     ...state.ALIMENTOS.map(r=>dayNum(r['Data'])),
   ].filter(n=>n!==null))].sort((a,b)=>a-b);
   if(state.activeLogDia===null||!days.includes(state.activeLogDia)) {
-    // Tal como nos Jogos: por defeito, o dia de hoje, se coincidir com um
-    // dia do torneio; caso contrário, o primeiro dia disponível.
+    // Por defeito, o dia de hoje, se coincidir com um dia do torneio;
+    // caso contrário, o último dia disponível (mais recente/tardio).
     const today=new Date().getDate();
-    state.activeLogDia=days.includes(today)?today:(days[0]??null);
+    state.activeLogDia=days.includes(today)?today:(days[days.length-1]??null);
   }
   let h='';
   days.forEach(d=>h+=`<div class="filter-pill ${state.activeLogDia===d?'active':''}" onclick="setLogDia(${d},this)">${String(d).padStart(2,'0')} Jul.</div>`);

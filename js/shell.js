@@ -104,6 +104,11 @@ export function showPage(id, btn) {
       import('./roles/shared.js').then(shared => shared.scrollClassFiltersIntoView());
     });
   }
+  if (id === 'jogos') {
+    requestAnimationFrame(() => {
+      import('./roles/shared.js').then(shared => shared.scrollJogosFiltersIntoView());
+    });
+  }
 }
 
 // Repõe a página em que o utilizador estava antes de um refresh (a página

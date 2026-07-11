@@ -7,6 +7,19 @@ export function wireFilterBarScroll(bar) {
   new ResizeObserver(check).observe(bar);
 }
 
+// scrollIntoView() não funciona em elementos dentro de uma página escondida
+// (display:none) — os filtros da página Jogos são construídos no arranque
+// da app, antes de a página estar visível. Chamar isto de novo quando a
+// página "jogos" se torna visível corrige isso (mesmo mecanismo usado em
+// scrollClassFiltersIntoView() para a página Class.).
+export function scrollJogosFiltersIntoView() {
+  ['filter-escalao', 'filter-dia'].forEach(id => {
+    const bar = document.getElementById(id);
+    const active = bar && bar.querySelector('.filter-pill.active');
+    if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+  });
+}
+
 export function buildFilterEscalao() {
   const esc=[...new Set(state.currentGames.map(g=>g.escalao))].sort();
   let h=`<div class="filter-pill ${state.activeEscalao==='todos'?'active':''}" onclick="setEscalao('todos',this)">Todos os jogos</div>`;
@@ -24,11 +37,12 @@ export function buildFilterDia() {
   // inteiro no .replace() mais abaixo.
   const dias = [...new Set(state.currentGames.map(g => g.dia).filter(Boolean))].sort();
   // Por defeito, seleciona o dia de hoje se coincidir com um dia do
-  // torneio (só na primeira construção do filtro — não força o dia atual
-  // se o utilizador já tiver escolhido outro).
+  // torneio; caso contrário, o último dia disponível (mais recente/tardio).
+  // Só na primeira construção do filtro — não força se o utilizador já
+  // tiver escolhido outro.
   if (state.activeDia === 'todos') {
     const todayDia = dias.find(d => dayNum(d) === new Date().getDate());
-    if (todayDia) state.activeDia = todayDia;
+    state.activeDia = todayDia || dias[dias.length - 1] || 'todos';
   }
   let h = `<div class="filter-pill ${state.activeDia==='todos'?'active':''}" onclick="setDia('todos',this)">Todos os dias</div>`;
   dias.forEach(d => h += `<div class="filter-pill ${state.activeDia===d?'active':''}" onclick="setDia('${d}',this)">${d.replace(/^0/, '').replace('/jul.', ' Jul.')}</div>`);
@@ -68,16 +82,30 @@ export function renderJogos() {
 // 'final'): fase 1/2 vêm marcados em g.fase (1 ou 2, ver data.js); "final"
 // são os cruzamentos (Série no formato "N.º/M.º" ou "Final").
 export function gamesOfClassFase(escalao) {
-  const fase=state.classFase||'2';
+  const fase=state.classFase||defaultClassFase();
   return state.currentGames.filter(g=>g.escalao===escalao&&(fase==='final'?g.fase==='final':g.fase===Number(fase)));
 }
 
-const FASE_LABELS={1:'1.ª Fase',2:'2.ª Fase',final:'Fase Final'};
+// Por defeito, a página abre na fase onde a equipa preferida do utilizador
+// está mesmo a jogar: se já tiver jogos na Fase Final, abre aí; senão, se
+// ainda só estiver nas séries da 2.ª fase, abre na 2.ª Fase. Sem
+// equipa/escalão associado ao perfil (ex. árbitro, pavilhão), usa "Fase
+// Final" como aparência genérica.
+function defaultClassFase() {
+  const eq=state.profile.equipa, esc=state.profile.escalao;
+  if(eq&&esc){
+    if(state.currentGames.some(g=>g.escalao===esc&&g.fase==='final'&&(g.eA===eq||g.eB===eq))) return 'final';
+    if(state.currentGames.some(g=>g.escalao===esc&&g.fase===2&&(g.eA===eq||g.eB===eq))) return '2';
+  }
+  return 'final';
+}
+
+const FASE_LABELS={1:'1.ª Fase',2:'2.ª Fase',final:'Fase Final',classfinal:'Classificação Final'};
 
 export function buildFilterClassFase() {
-  if(!state.classFase) state.classFase='2';
+  if(!state.classFase) state.classFase=defaultClassFase();
   let h='';
-  ['1','2','final'].forEach(f=>h+=`<div class="filter-pill ${state.classFase===f?'active':''}" onclick="setClassFase('${f}',this)">${FASE_LABELS[f]}</div>`);
+  ['1','2','final','classfinal'].forEach(f=>h+=`<div class="filter-pill ${state.classFase===f?'active':''}" onclick="setClassFase('${f}',this)">${FASE_LABELS[f]}</div>`);
   const bar=document.getElementById('filter-class-fase');
   bar.innerHTML=h;
   wireFilterBarScroll(bar);
@@ -94,8 +122,13 @@ export function setClassFase(f, el) {
 }
 
 export function buildClassFilters() {
-  if(!state.classFase) state.classFase='2';
-  const esc=[...new Set(state.currentGames.filter(g=>state.classFase==='final'?g.fase==='final':g.fase===Number(state.classFase)).map(g=>g.escalao))].sort();
+  if(!state.classFase) state.classFase=defaultClassFase();
+  // "Classificação Final" não depende de jogos de nenhuma fase em concreto
+  // (combina eliminatórias da Fase Final com séries da 2.ª fase sem
+  // eliminatória) — por isso mostra sempre todos os escalões existentes.
+  const esc=state.classFase==='classfinal'
+    ? [...new Set(state.currentGames.map(g=>g.escalao))].sort()
+    : [...new Set(state.currentGames.filter(g=>state.classFase==='final'?g.fase==='final':g.fase===Number(state.classFase)).map(g=>g.escalao))].sort();
   if(!state.classEscalao||!esc.includes(state.classEscalao)) state.classEscalao=(state.profile.escalao&&esc.includes(state.profile.escalao))?state.profile.escalao:(esc[0]||'');
   let h='';
   esc.forEach(e=>h+=`<div class="filter-pill ${e===state.classEscalao?'active':''}" onclick="setClassEscalao('${e}',this)">${e}${e===state.profile.escalao?' ★':''}</div>`);
@@ -175,13 +208,41 @@ function bracketTopLevel(labels) {
 }
 
 export function buildClassSeries() {
-  const games=gamesOfClassFase(state.classEscalao);
   const bar=document.getElementById('filter-class-serie');
+
+  if(state.classFase==='classfinal') {
+    bar.style.display='none';
+    bar.innerHTML='';
+    document.getElementById('filter-class-melhores').style.display='none';
+    renderClass();
+    return;
+  }
+  bar.style.display='flex';
+  const games=gamesOfClassFase(state.classEscalao);
 
   if(state.classFase==='final') {
     const labels=finalBracketLabels(state.classEscalao);
     const top=bracketTopLevel(labels).sort((a,b)=>bracketOrder(a)-bracketOrder(b));
-    if(!top.includes(state.classSerie)) state.classSerie=top[0]||'';
+    if(!top.includes(state.classSerie)) {
+      // Tenta pré-selecionar a eliminatória (ou, se estiver agrupada, o
+      // grupo-mãe + a sub-eliminatória) onde a equipa preferida joga. Dá
+      // sempre prioridade a um jogo numa sub-eliminatória (mais específico)
+      // sobre o jogo da eliminatória-mãe (ex. "5º/8º") — senão, como o jogo
+      // da mãe costuma ter um ID mais baixo (é jogado primeiro), acabava a
+      // ganhar mesmo quando a equipa já tem sub-eliminatória atribuída.
+      const childLabels=labels.filter(l=>!top.includes(l));
+      const myChildLabel=findMySerie(state.classEscalao,childLabels);
+      let parent, sub;
+      if(myChildLabel){
+        parent=top.find(t=>bracketChildren(labels,t).includes(myChildLabel));
+        sub=myChildLabel;
+      } else {
+        parent=findMySerie(state.classEscalao,top);
+        sub='todos';
+      }
+      if(parent){ state.classSerie=parent; state.classFinalSub=sub; }
+      else state.classSerie=top[0]||'';
+    }
     let h='';
     top.forEach(x=>h+=`<div class="filter-pill ${x===state.classSerie?'active':''}" onclick="setClassSerieFinal('${x}',this)">${x}${isMySerie(state.classEscalao,x)?' ★':''}</div>`);
     bar.innerHTML=h;
@@ -404,7 +465,9 @@ const pc=i=>i===0?'pos-1':i===1?'pos-2':i===2?'pos-3':'';
 const pi=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
 
 export function renderClass() {
-  if(!state.classEscalao||!state.classSerie){document.getElementById('class-content').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Seleciona escalão e série</div></div>`;return;}
+  if(!state.classEscalao){document.getElementById('class-content').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Seleciona um escalão</div></div>`;return;}
+  if(state.classFase==='classfinal'){renderClassificacaoFinal();return;}
+  if(!state.classSerie){document.getElementById('class-content').innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Seleciona escalão e série</div></div>`;return;}
   if(state.classFase==='final'){renderFinalBracket();return;}
   if(state.classSerie==='melhores'){renderMelhores();return;}
 
@@ -447,6 +510,84 @@ export function renderFinalBracket() {
     h+=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Sem jogos</div></div>`;
   }
   games.forEach(g=>h+=gameItemHTML(g,true));
+  h+=`</div></div>`;
+  document.getElementById('class-content').innerHTML=h;
+}
+
+// Posições que não são decididas por nenhuma eliminatória da Fase Final —
+// a série (2.ª fase) indicada define diretamente esse intervalo de
+// colocações, pela ordem da sua classificação final. Não há nenhuma coluna
+// na sheet que diga isto — foi confirmado manualmente por escalão.
+const CLASSIFICACAO_FINAL_SERIE_RANGE = {
+  'U14 F': { 'Q': [33, 38] },
+  'U15 F': { 'M': [17, 22], 'N': [23, 28], 'O': [29, 33] },
+  'U16 F': { 'Q': [37, 41] },
+};
+
+// Equipas sem colocação calculável (ex. desistência antes da 2.ª fase) —
+// também confirmado manualmente.
+const CLASSIFICACAO_FINAL_EXTRA = {
+  'U19 F': [{ equipa: 'Voliday "E"', pos: 51 }],
+};
+
+export function renderClassificacaoFinal() {
+  const escalao=state.classEscalao;
+  const entries=[];
+
+  // 1) Eliminatórias-folha da Fase Final (intervalos de largura 2, ou
+  // "Final") — cada uma decide 2 posições. Sem resultado oficial ainda,
+  // mostra "Vxxx"/"Dxxx" (vencedor/derrotado do jogo xxx) em vez do nome.
+  const finalGames=state.currentGames.filter(g=>g.escalao===escalao&&g.fase==='final');
+  finalGames.forEach(g=>{
+    const r=bracketRange(g.serie);
+    if(!r||r[1]-r[0]!==1) return;
+    const [low,high]=r;
+    const decided=g.rA!==null&&g.rA!==undefined&&isAprovado(g);
+    if(decided){
+      const winnerIsA=g.rA>g.rB;
+      entries.push({pos:low, team:winnerIsA?g.eA:g.eB, decided:true});
+      entries.push({pos:high, team:winnerIsA?g.eB:g.eA, decided:true});
+    } else {
+      entries.push({pos:low, team:`V${g.id}`, decided:false});
+      entries.push({pos:high, team:`D${g.id}`, decided:false});
+    }
+  });
+
+  // 2) Séries da 2.ª fase sem eliminatória própria — posição vem da
+  // classificação final dessa série, mas só depois de a série estar
+  // COMPLETA (round-robin todo jogado: cada equipa com nº de jogos = nº de
+  // equipas da série - 1). Antes disso, mesmo que a classificação parcial já
+  // dê uma ordem, ainda pode mudar — mostra o código "NºSX" (posição na
+  // série + letra da série), a mesma convenção que a sheet já usava.
+  const serieRanges=CLASSIFICACAO_FINAL_SERIE_RANGE[escalao]||{};
+  Object.entries(serieRanges).forEach(([serie,[low,high]])=>{
+    const standings=computeSerieStandings(escalao,serie,g=>g.fase===2);
+    const n=standings.length;
+    const fechada=n>0&&standings.every(([,s])=>s.j===n-1);
+    for(let pos=low;pos<=high;pos++){
+      const idx=pos-low;
+      if(fechada&&standings[idx]) entries.push({pos, team:standings[idx][0], decided:true});
+      else entries.push({pos, team:`${idx+1}ºS${serie}`, decided:false});
+    }
+  });
+
+  // 3) Casos avulsos (ex. desistências).
+  (CLASSIFICACAO_FINAL_EXTRA[escalao]||[]).forEach(({equipa,pos})=>entries.push({pos, team:equipa, decided:true}));
+
+  entries.sort((a,b)=>a.pos-b.pos);
+
+  let h=`<div class="card"><div class="card-header"><div class="card-title">${escalao} · Classificação Final</div></div><div>`;
+  if(!entries.length){
+    h+=`<div class="empty"><div class="empty-icon">🏆</div><div class="empty-txt">Sem dados</div></div>`;
+  }
+  entries.forEach(({pos,team,decided})=>{
+    const me=decided&&team===state.profile.equipa;
+    const i=pos-1;
+    const teamCell=decided
+      ? `<span class="class-team-cell">${teamLogoIcon(team)}<span class="class-team-name">${team}</span></span>`
+      : `<span class="class-team-pending">${team}</span>`;
+    h+=`<div class="class-final-row ${me?'my-row':''}"><span class="pos-num ${pc(i)}">${pi(i)||pos}</span>${teamCell}</div>`;
+  });
   h+=`</div></div>`;
   document.getElementById('class-content').innerHTML=h;
 }

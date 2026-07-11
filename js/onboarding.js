@@ -286,6 +286,15 @@ export function handleStep3() {
   // da Organização — a app deve abrir no Início, nunca "herdar" a última
   // página de antes de se ter passado pelo onboarding.
   sessionStorage.removeItem('summercup_last_page');
+  // Idem para os filtros da página Class.: sem reload (ex. "Mudar Equipa"),
+  // o state.classFase/Escalao/Serie da equipa anterior ficava na memória —
+  // repõe tudo para a página recalcular os valores por defeito para a
+  // equipa nova, como se fosse a primeira vez a abrir.
+  state.classFase = '';
+  state.classEscalao = '';
+  state.classSerie = '';
+  state.classFinalSub = 'todos';
+  state.classMelhorTier = 1;
   document.getElementById('onboarding').style.display = 'none';
   // Dynamic import to avoid circular dependency
   import('./shell.js').then(({ initApp }) => initApp());

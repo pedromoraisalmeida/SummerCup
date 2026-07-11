@@ -12,7 +12,7 @@ export const state = {
   activeEscalao: '',
   activeDia: 'todos',
   activeLogDia: null,
-  classFase: '2',
+  classFase: '',
   classEscalao: '',
   classSerie: '',
   classFinalSub: 'todos',

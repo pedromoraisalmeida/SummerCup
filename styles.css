@@ -196,6 +196,13 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .pts-num{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--blue)}
 .class-note{padding:8px 14px;font-size:11px;color:var(--txt2);text-align:center;border-top:1px solid var(--border)}
 
+/* Classificação Final — lista simples de posições, sem colunas de stats */
+.class-final-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border)}
+.class-final-row:last-child{border-bottom:none}
+.class-final-row.my-row{background:var(--blue-l)}
+.class-final-row .pos-num{width:30px;flex-shrink:0;text-align:center;display:inline-flex;align-items:center;justify-content:center}
+.class-team-pending{font-size:12px;font-style:italic;color:var(--txt3)}
+
 /* Tabela "Melhores" — letra um pouco menor (mais colunas visíveis de uma vez) */
 .class-table-melhores{font-size:12px}
 .class-table-melhores th{font-size:9px}
