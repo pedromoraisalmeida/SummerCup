@@ -396,7 +396,7 @@ function fracTh(num, den, cls = 'col-sets') {
 // hideVD: usado só pelos "Melhores" — em portrait, esconde V/D/Pts (que na
 // classificação normal ficam sempre visíveis) para dar lugar às 3 médias.
 function classTableHeadHTML(extraCols, includeFC, hideVD) {
-  const fcCol = includeFC===false ? '' : '<th class="col-sets">FC</th>';
+  const fcCol = includeFC===false ? '' : '<th>FC</th>';
   const vdCls = hideVD ? ' class="col-sets"' : '';
   return `<tr><th>#</th><th>Equipa</th><th>J</th><th${vdCls}>V</th><th${vdCls}>D</th><th class="col-sets">S+</th><th class="col-sets">S-</th>${fracTh('S+','S-')}<th class="col-sets">P+</th><th class="col-sets">P-</th>${fracTh('P+','P-')}${fcCol}<th${vdCls}>Pts</th>${extraCols||''}</tr>`;
 }
@@ -416,7 +416,7 @@ export function renderClass() {
     const me=t===state.profile.equipa;
     h+=`<tr class="${me?'my-row':''}"><td><span class="pos-num ${pc(i)}">${pi(i)||i+1}</span></td>
       <td style="font-size:12px;font-weight:${me?700:400};max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><span class="class-team-cell">${teamLogoIcon(t)}<span class="class-team-name">${t}</span></span></td>
-      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa,3)}</td><td class="col-sets">${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
+      <td>${s.j}</td><td>${s.v}</td><td>${s.d}</td><td class="col-sets">${s.sf}</td><td class="col-sets">${s.sc}</td><td class="col-sets">${ratio(s.sf,s.sc)}</td><td class="col-sets">${s.pf}</td><td class="col-sets">${s.pa}</td><td class="col-sets">${ratio(s.pf,s.pa,3)}</td><td>${s.fc}</td><td><span class="pts-num">${s.pts}</span></td></tr>`;
   });
   h+=`</tbody></table><div class="class-note">Apenas os jogos com resultados oficiais são contabilizados</div></div>`;
   const sg=state.currentGames.filter(g=>g.escalao===state.classEscalao&&g.serie===state.classSerie&&faseFilter(g)).sort((a,b)=>a.id-b.id);
